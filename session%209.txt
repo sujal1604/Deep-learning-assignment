@@ -1,0 +1,256 @@
+Session 9 - Deep Learning Assignment
+
+Task 1: Installing TensorFlow and Creating a Simple Neural Network
+
+TensorFlow can be installed using:
+
+    pip install tensorflow
+
+Modern TensorFlow includes the Keras API, so it can be imported directly
+from TensorFlow.
+
+    import tensorflow as tf
+    from tensorflow import keras
+    from tensorflow.keras import layers
+
+    model = keras.Sequential([
+        layers.Input(shape=(4,)),
+        layers.Dense(8, activation="relu"),
+        layers.Dense(1, activation="sigmoid")
+    ])
+
+    model.summary()
+
+Explanation: The model has an input layer that accepts 4 features, one
+hidden Dense layer with 8 neurons, and an output layer with one neuron.
+ReLU is used in the hidden layer and sigmoid is used for binary output.
+
+Task 2: Print Weights Before and After One Training Step
+
+    import numpy as np
+    import tensorflow as tf
+    from tensorflow import keras
+    from tensorflow.keras import layers
+
+    # Create model
+    model = keras.Sequential([
+        layers.Input(shape=(2,)),
+        layers.Dense(3, activation="relu"),
+        layers.Dense(1, activation="sigmoid")
+    ])
+
+    # Compile model
+    model.compile(
+        optimizer=keras.optimizers.SGD(learning_rate=0.1),
+        loss="binary_crossentropy"
+    )
+
+    # Dummy data
+    X = np.array([
+        [1.0, 2.0]
+    ])
+
+    y = np.array([
+        [1.0]
+    ])
+
+    print("Weights before training:")
+
+    for layer in model.layers:
+        print(layer.get_weights())
+
+    # Perform one training step
+    model.train_on_batch(X, y)
+
+    print("\nWeights after one training step:")
+
+    for layer in model.layers:
+        print(layer.get_weights())
+
+Explanation: Before training, the model contains randomly initialized
+weights. After one training step, backpropagation calculates gradients
+and the optimizer updates the weights to reduce the loss.
+
+Task 3: Manual Gradient Calculation Using the Chain Rule
+
+Given:
+
+Input x = 2 Weight w = 0.5 Bias b = 1 Target y = 1
+
+For a single neuron:
+
+z = wx + b
+
+z = (0.5 × 2) + 1 = 2
+
+The sigmoid activation is:
+
+a = 1 / (1 + exp(-z))
+
+For z = 2:
+
+a ≈ 0.8808
+
+For this example, we use Mean Squared Error:
+
+L = (a - y)²
+
+We want to calculate:
+
+dL/dw
+
+Using the chain rule:
+
+dL/dw = dL/da × da/dz × dz/dw
+
+Step 1:
+
+dL/da = 2(a - y)
+
+= 2(0.8808 - 1)
+
+≈ -0.2384
+
+Step 2:
+
+da/dz = a(1 - a)
+
+= 0.8808(1 - 0.8808)
+
+≈ 0.1050
+
+Step 3:
+
+dz/dw = x = 2
+
+Therefore:
+
+dL/dw ≈ -0.2384 × 0.1050 × 2
+
+dL/dw ≈ -0.0501
+
+Python verification:
+
+    import math
+
+    x = 2
+    w = 0.5
+    b = 1
+    y = 1
+
+    z = w * x + b
+
+    a = 1 / (1 + math.exp(-z))
+
+    dL_da = 2 * (a - y)
+    da_dz = a * (1 - a)
+    dz_dw = x
+
+    dL_dw = dL_da * da_dz * dz_dw
+
+    print("z:", z)
+    print("Sigmoid output:", a)
+    print("Gradient dL/dw:", dL_dw)
+
+The negative gradient indicates that increasing the weight slightly
+would reduce the loss for this example.
+
+Task 4: Repeated Sigmoid Activations
+
+    import math
+
+    def sigmoid(x):
+        return 1 / (1 + math.exp(-x))
+
+    def repeated_sigmoid(value, layers):
+        output = value
+
+        for layer in range(layers):
+            output = sigmoid(output)
+            print(
+                "Layer",
+                layer + 1,
+                "Output:",
+                output
+            )
+
+        return output
+
+    final_output = repeated_sigmoid(0.9, 10)
+
+    print("Final Output:", final_output)
+
+Explanation: Repeatedly applying sigmoid to an activation causes the
+value to settle toward a limited range. However, the classic
+vanishing-gradient problem specifically occurs during backpropagation
+because sigmoid derivatives are at most 0.25. Multiplying many such
+derivatives across deep layers can make gradients extremely small.
+
+A simple gradient demonstration is:
+
+    def sigmoid_derivative_from_output(output):
+        return output * (1 - output)
+
+    value = 0.9
+    gradient_product = 1.0
+
+    for layer in range(10):
+        value = sigmoid(value)
+        gradient_product *= sigmoid_derivative_from_output(value)
+
+    print("Final activation:", value)
+    print("Product of derivatives:", gradient_product)
+
+The product of derivatives becomes very small, demonstrating how
+gradients can vanish in a deep sigmoid network.
+
+Task 5: Demonstrating Exploding Gradients
+
+    import numpy as np
+
+    np.random.seed(42)
+
+    # Input
+    x = np.array([[1.0, 1.0]])
+
+    # Large weights for a deep linear network
+    weights = [
+        np.random.randn(2, 2) * 10
+        for _ in range(8)
+    ]
+
+    # Forward propagation
+    activation = x
+
+    for i, weight in enumerate(weights):
+        activation = np.dot(activation, weight)
+        print(
+            "Layer",
+            i + 1,
+            "Activation magnitude:",
+            np.linalg.norm(activation)
+        )
+
+    # Simulate backward gradient propagation
+    gradient = np.ones_like(activation)
+
+    for i, weight in enumerate(reversed(weights)):
+        gradient = np.dot(gradient, weight.T)
+        print(
+            "Backward step",
+            i + 1,
+            "Gradient magnitude:",
+            np.linalg.norm(gradient)
+        )
+
+Explanation: When large weights are repeatedly multiplied during
+backpropagation, the gradient magnitude can grow rapidly. Extremely
+large gradients can cause unstable parameter updates, numerical
+overflow, and difficulty in training the network.
+
+Conclusion
+
+This assignment demonstrates Keras model creation, weight updates, the
+chain rule, vanishing gradients, and exploding gradients. Understanding
+gradient behavior is important for successfully training deep neural
+networks.

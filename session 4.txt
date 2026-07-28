@@ -1,0 +1,243 @@
+Session 4 - Deep Learning Assignment
+
+Task 1: Python Functions for Sigmoid, Tanh, and ReLU
+
+The following Python functions implement three commonly used activation
+functions: sigmoid, tanh, and ReLU.
+
+    import math
+
+    def sigmoid(x):
+        return 1 / (1 + math.exp(-x))
+
+    def tanh_activation(x):
+        return math.tanh(x)
+
+    def relu(x):
+        return max(0, x)
+
+    # Example
+    value = 2.0
+
+    print("Sigmoid:", sigmoid(value))
+    print("Tanh:", tanh_activation(value))
+    print("ReLU:", relu(value))
+
+Explanation:
+
+Sigmoid: The sigmoid function converts an input value into a value
+between 0 and 1.
+
+Formula: sigmoid(x) = 1 / (1 + e^(-x))
+
+Tanh: The tanh activation function converts an input into a value
+between -1 and 1.
+
+ReLU: The ReLU function returns 0 for negative input values and returns
+the original value for positive input values.
+
+Formula: ReLU(x) = max(0, x)
+
+Task 2: Plot Sigmoid, Tanh, and ReLU on the Same Figure
+
+The following code uses NumPy and Matplotlib to plot all three
+activation functions for input values ranging from -10 to 10.
+
+    import numpy as np
+    import matplotlib.pyplot as plt
+
+    # Generate input values
+    x = np.linspace(-10, 10, 500)
+
+    # Activation functions
+    def sigmoid(x):
+        return 1 / (1 + np.exp(-x))
+
+    def tanh_activation(x):
+        return np.tanh(x)
+
+    def relu(x):
+        return np.maximum(0, x)
+
+    # Calculate outputs
+    sigmoid_output = sigmoid(x)
+    tanh_output = tanh_activation(x)
+    relu_output = relu(x)
+
+    # Plot all activation functions
+    plt.figure(figsize=(10, 6))
+
+    plt.plot(x, sigmoid_output, label="Sigmoid")
+    plt.plot(x, tanh_output, label="Tanh")
+    plt.plot(x, relu_output, label="ReLU")
+
+    plt.title("Comparison of Activation Functions")
+    plt.xlabel("Input")
+    plt.ylabel("Output")
+    plt.legend()
+    plt.grid(True)
+
+    plt.show()
+
+Explanation: The graph shows the different behavior of each activation
+function.
+
+-   Sigmoid produces outputs between 0 and 1.
+-   Tanh produces outputs between -1 and 1.
+-   ReLU produces 0 for negative inputs and increases linearly for
+    positive inputs.
+
+Task 3: Simulating the Vanishing Gradient Problem
+
+The derivative of the sigmoid function is:
+
+sigmoid’(x) = sigmoid(x) × (1 - sigmoid(x))
+
+The following code calculates and prints the sigmoid derivative for
+values between -10 and 10.
+
+    import numpy as np
+
+    def sigmoid(x):
+        return 1 / (1 + np.exp(-x))
+
+    def sigmoid_derivative(x):
+        s = sigmoid(x)
+        return s * (1 - s)
+
+    # Input values from -10 to 10
+    input_values = np.arange(-10, 11, 1)
+
+    print("Input\tSigmoid Derivative")
+
+    for x in input_values:
+        derivative = sigmoid_derivative(x)
+        print(x, "\t", round(derivative, 6))
+
+Explanation:
+
+The sigmoid derivative has its maximum value near x = 0, where the
+gradient is approximately 0.25.
+
+For very large positive values, such as x = 10, the sigmoid output
+becomes close to 1. Therefore, its derivative becomes very close to 0.
+
+For very large negative values, such as x = -10, the sigmoid output
+becomes close to 0. Its derivative again becomes very close to 0.
+
+This demonstrates the vanishing gradient problem. In deep neural
+networks, repeatedly multiplying very small gradients during
+backpropagation can make the gradients of earlier layers extremely
+small. As a result, those layers learn very slowly.
+
+Task 4: Demonstrating the Dying ReLU Problem
+
+The dying ReLU problem occurs when a ReLU neuron receives only negative
+inputs. Since ReLU returns 0 for all negative values, the neuron may
+stop producing useful outputs.
+
+    import numpy as np
+
+    def relu(x):
+        return np.maximum(0, x)
+
+    def demonstrate_dying_relu(negative_values):
+        outputs = relu(negative_values)
+
+        print("Input Array:")
+        print(negative_values)
+
+        print("\nOutput Array after ReLU:")
+        print(outputs)
+
+    # Array containing only negative values
+    inputs = np.array([-10, -8, -5, -3, -1, -0.5])
+
+    demonstrate_dying_relu(inputs)
+
+Expected Output:
+
+Input Array: [-10. -8. -5. -3. -1. -0.5]
+
+Output Array after ReLU: [0. 0. 0. 0. 0. 0.]
+
+Explanation:
+
+All negative input values become zero after passing through the ReLU
+activation function. The derivative of ReLU is also zero for negative
+inputs.
+
+If a neuron continuously receives negative values, its gradient can
+remain zero during training. Therefore, its weights may stop updating.
+This situation is known as the dying ReLU problem.
+
+Task 5: Modified Sigmoid Function with an Input Scaling Parameter
+
+For this task, the sigmoid activation function is modified by adding a
+scaling parameter called “a”.
+
+Original function:
+
+f(x) = sigmoid(x)
+
+Modified function:
+
+f(x) = sigmoid(a × x)
+
+Changing the value of “a” changes how steeply the sigmoid function
+transitions from 0 to 1.
+
+    import numpy as np
+    import matplotlib.pyplot as plt
+
+    def sigmoid(x):
+        return 1 / (1 + np.exp(-x))
+
+    def scaled_sigmoid(x, a):
+        return 1 / (1 + np.exp(-(a * x)))
+
+    # Generate input values
+    x = np.linspace(-10, 10, 500)
+
+    # Original sigmoid
+    original_output = sigmoid(x)
+
+    # Modified sigmoid with scaling parameter
+    a = 2
+    modified_output = scaled_sigmoid(x, a)
+
+    # Plot comparison
+    plt.figure(figsize=(10, 6))
+
+    plt.plot(x, original_output, label="Original Sigmoid (a = 1)")
+    plt.plot(x, modified_output, label="Scaled Sigmoid (a = 2)")
+
+    plt.title("Original vs Scaled Sigmoid Activation Function")
+    plt.xlabel("Input")
+    plt.ylabel("Output")
+    plt.legend()
+    plt.grid(True)
+
+    plt.show()
+
+Explanation:
+
+The original sigmoid function uses a scaling value of 1. In the modified
+version, the input is multiplied by a = 2 before applying the sigmoid
+function.
+
+When the value of “a” is increased, the sigmoid curve becomes steeper
+around x = 0. If “a” is smaller than 1, the curve becomes flatter.
+
+The scaling parameter can therefore control how quickly the activation
+function changes in response to its input.
+
+Conclusion
+
+In this assignment, we implemented and compared three important
+activation functions: sigmoid, tanh, and ReLU. We also demonstrated two
+common problems in neural networks: the vanishing gradient problem
+associated with sigmoid and the dying ReLU problem associated with ReLU.
+Finally, we modified the sigmoid function by adding an input scaling
+parameter and observed how the parameter changes the shape of the
+activation function.

@@ -1,0 +1,214 @@
+Session 11 - Deep Learning Assignment
+
+Task 1: Fashion MNIST Classifier Using SGD
+
+The following code trains a simple neural network on the Fashion MNIST
+dataset using the SGD optimizer with its default parameters.
+
+    import tensorflow as tf
+    from tensorflow import keras
+    from tensorflow.keras import layers
+
+    # Load Fashion MNIST dataset
+    (x_train, y_train), (x_test, y_test) = keras.datasets.fashion_mnist.load_data()
+
+    # Normalize pixel values
+    x_train = x_train.astype("float32") / 255.0
+    x_test = x_test.astype("float32") / 255.0
+
+    # Create model
+    model_sgd = keras.Sequential([
+        layers.Input(shape=(28, 28)),
+        layers.Flatten(),
+        layers.Dense(128, activation="relu"),
+        layers.Dense(10, activation="softmax")
+    ])
+
+    # Compile using default SGD
+    model_sgd.compile(
+        optimizer=keras.optimizers.SGD(),
+        loss="sparse_categorical_crossentropy",
+        metrics=["accuracy"]
+    )
+
+    # Train for 5 epochs
+    history_sgd = model_sgd.fit(
+        x_train,
+        y_train,
+        epochs=5,
+        batch_size=128,
+        validation_split=0.2
+    )
+
+    # Record final values
+    sgd_train_accuracy = history_sgd.history["accuracy"][-1]
+    sgd_train_loss = history_sgd.history["loss"][-1]
+    sgd_val_accuracy = history_sgd.history["val_accuracy"][-1]
+    sgd_val_loss = history_sgd.history["val_loss"][-1]
+
+    print("SGD Final Training Accuracy:", sgd_train_accuracy)
+    print("SGD Final Training Loss:", sgd_train_loss)
+    print("SGD Final Validation Accuracy:", sgd_val_accuracy)
+    print("SGD Final Validation Loss:", sgd_val_loss)
+
+Observation: The exact accuracy and loss depend on the training run. The
+final values after 5 epochs are printed by the program and should be
+recorded as the SGD baseline.
+
+Task 2: Fashion MNIST Classifier Using RMSProp
+
+    from tensorflow import keras
+    from tensorflow.keras import layers
+
+    model_rmsprop = keras.Sequential([
+        layers.Input(shape=(28, 28)),
+        layers.Flatten(),
+        layers.Dense(128, activation="relu"),
+        layers.Dense(10, activation="softmax")
+    ])
+
+    model_rmsprop.compile(
+        optimizer=keras.optimizers.RMSprop(),
+        loss="sparse_categorical_crossentropy",
+        metrics=["accuracy"]
+    )
+
+    history_rmsprop = model_rmsprop.fit(
+        x_train,
+        y_train,
+        epochs=5,
+        batch_size=128,
+        validation_split=0.2
+    )
+
+    rmsprop_val_accuracy = history_rmsprop.history["val_accuracy"][-1]
+
+    print("SGD Validation Accuracy:", sgd_val_accuracy)
+    print("RMSProp Validation Accuracy:", rmsprop_val_accuracy)
+
+Comparison: RMSProp automatically adapts the learning rate for
+individual parameters based on recent gradients. It often converges
+faster than basic SGD during the first few epochs, although the exact
+result depends on the model and training run.
+
+Task 3: Fashion MNIST Classifier Using Adam
+
+    from tensorflow import keras
+    from tensorflow.keras import layers
+
+    model_adam = keras.Sequential([
+        layers.Input(shape=(28, 28)),
+        layers.Flatten(),
+        layers.Dense(128, activation="relu"),
+        layers.Dense(10, activation="softmax")
+    ])
+
+    adam_optimizer = keras.optimizers.Adam(
+        learning_rate=0.0005
+    )
+
+    model_adam.compile(
+        optimizer=adam_optimizer,
+        loss="sparse_categorical_crossentropy",
+        metrics=["accuracy"]
+    )
+
+    history_adam = model_adam.fit(
+        x_train,
+        y_train,
+        epochs=5,
+        batch_size=128,
+        validation_split=0.2
+    )
+
+    adam_val_accuracy = history_adam.history["val_accuracy"][-1]
+
+    print("Adam Validation Accuracy:", adam_val_accuracy)
+
+Observation: Adam usually learns quickly because it combines adaptive
+learning rates with momentum-like behavior. A learning rate of 0.0005 is
+smaller than Adam’s common default of 0.001, which may make updates more
+stable but slightly slower. The actual accuracy should be recorded after
+running the experiment.
+
+Task 4: Learning Rate Schedule with Momentum SGD
+
+The learning rate is reduced by half after every 2 epochs.
+
+    import tensorflow as tf
+    from tensorflow import keras
+    from tensorflow.keras import layers
+
+    model_momentum = keras.Sequential([
+        layers.Input(shape=(28, 28)),
+        layers.Flatten(),
+        layers.Dense(128, activation="relu"),
+        layers.Dense(10, activation="softmax")
+    ])
+
+    optimizer = keras.optimizers.SGD(
+        learning_rate=0.1,
+        momentum=0.9
+    )
+
+    model_momentum.compile(
+        optimizer=optimizer,
+        loss="sparse_categorical_crossentropy",
+        metrics=["accuracy"]
+    )
+
+    def lr_schedule(epoch, lr):
+
+        # Reduce learning rate after every 2 completed epochs
+        if epoch > 0 and epoch % 2 == 0:
+            return lr * 0.5
+
+        return lr
+
+    lr_callback = keras.callbacks.LearningRateScheduler(
+        lr_schedule,
+        verbose=1
+    )
+
+    history_momentum = model_momentum.fit(
+        x_train,
+        y_train,
+        epochs=6,
+        batch_size=128,
+        validation_split=0.2,
+        callbacks=[lr_callback]
+    )
+
+Learning Rate Changes:
+
+Epoch 1: 0.100 Epoch 2: 0.100 Epoch 3: 0.050 Epoch 4: 0.050 Epoch 5:
+0.025 Epoch 6: 0.025
+
+Explanation: Momentum helps the optimizer continue moving in useful
+directions, while the learning rate schedule reduces the step size as
+training progresses. This allows larger updates early in training and
+more careful updates later.
+
+Task 5: Why Adam Is Often Preferred
+
+Adam is often preferred in industry because it automatically adapts the
+learning rate for different parameters and usually requires less manual
+tuning than standard SGD. It also uses information from previous
+gradients, which can help models converge quickly and reliably on
+complex datasets.
+
+Real-World Scenario: Spotify Recommendation System
+
+A Spotify recommendation model may be trained using millions of user
+interactions. The optimizer affects how quickly and effectively the
+model learns user preferences. If the optimizer trains the model
+efficiently, recommendations can become more relevant, improving the
+user’s listening experience. Poor optimization may result in slower
+training or less accurate recommendations.
+
+Conclusion
+
+This assignment compares SGD, RMSProp, Adam, and Momentum-based
+optimization. Different optimizers can affect convergence speed,
+stability, and final model accuracy. Adam is widely used because it
+provides adaptive updates and often performs well with minimal tuning.

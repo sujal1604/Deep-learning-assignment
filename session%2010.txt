@@ -1,0 +1,295 @@
+Session 10 - Deep Learning Assignment
+
+Note: The exact validation accuracy can vary between runs because of
+random weight initialization and training conditions. Run each
+experiment to record the actual accuracy produced in your environment.
+
+Task 1: MNIST Model Without Regularization
+
+    import tensorflow as tf
+    from tensorflow import keras
+    from tensorflow.keras import layers
+
+    # Load MNIST dataset
+    (x_train, y_train), (x_test, y_test) = keras.datasets.mnist.load_data()
+
+    # Normalize pixel values
+    x_train = x_train.astype("float32") / 255.0
+    x_test = x_test.astype("float32") / 255.0
+
+    # Create model
+    model = keras.Sequential([
+        layers.Input(shape=(28, 28)),
+        layers.Flatten(),
+        layers.Dense(128, activation="relu"),
+        layers.Dense(64, activation="relu"),
+        layers.Dense(10, activation="softmax")
+    ])
+
+    model.compile(
+        optimizer="adam",
+        loss="sparse_categorical_crossentropy",
+        metrics=["accuracy"]
+    )
+
+    history = model.fit(
+        x_train,
+        y_train,
+        epochs=5,
+        batch_size=128,
+        validation_split=0.2
+    )
+
+    baseline_val_accuracy = history.history["val_accuracy"][-1]
+
+    print(
+        "Validation Accuracy without Regularization:",
+        baseline_val_accuracy
+    )
+
+Observation: The final validation accuracy after 5 epochs is stored in
+baseline_val_accuracy. This value should be recorded after running the
+code.
+
+Task 2: Model with L2 Regularization
+
+    import tensorflow as tf
+    from tensorflow import keras
+    from tensorflow.keras import layers, regularizers
+
+    model_l2 = keras.Sequential([
+        layers.Input(shape=(28, 28)),
+        layers.Flatten(),
+
+        layers.Dense(
+            128,
+            activation="relu",
+            kernel_regularizer=regularizers.l2(0.01)
+        ),
+
+        layers.Dense(
+            64,
+            activation="relu",
+            kernel_regularizer=regularizers.l2(0.01)
+        ),
+
+        layers.Dense(
+            10,
+            activation="softmax",
+            kernel_regularizer=regularizers.l2(0.01)
+        )
+    ])
+
+    model_l2.compile(
+        optimizer="adam",
+        loss="sparse_categorical_crossentropy",
+        metrics=["accuracy"]
+    )
+
+    history_l2 = model_l2.fit(
+        x_train,
+        y_train,
+        epochs=5,
+        batch_size=128,
+        validation_split=0.2
+    )
+
+    l2_val_accuracy = history_l2.history["val_accuracy"][-1]
+
+    print(
+        "Validation Accuracy with L2 Regularization:",
+        l2_val_accuracy
+    )
+
+    print(
+        "Baseline Validation Accuracy:",
+        baseline_val_accuracy
+    )
+
+Explanation: L2 regularization adds a penalty for large weights to the
+loss function. It can reduce overfitting, although a strong value such
+as 0.01 may sometimes lower short-term training and validation accuracy
+compared with the unregularized model.
+
+Task 3: Model with Dropout
+
+    from tensorflow import keras
+    from tensorflow.keras import layers
+
+    model_dropout = keras.Sequential([
+        layers.Input(shape=(28, 28)),
+        layers.Flatten(),
+
+        layers.Dense(128, activation="relu"),
+        layers.Dropout(0.5),
+
+        layers.Dense(64, activation="relu"),
+        layers.Dropout(0.5),
+
+        layers.Dense(10, activation="softmax")
+    ])
+
+    model_dropout.compile(
+        optimizer="adam",
+        loss="sparse_categorical_crossentropy",
+        metrics=["accuracy"]
+    )
+
+    history_dropout = model_dropout.fit(
+        x_train,
+        y_train,
+        epochs=5,
+        batch_size=128,
+        validation_split=0.2
+    )
+
+    dropout_val_accuracy = history_dropout.history["val_accuracy"][-1]
+
+    print(
+        "Validation Accuracy with Dropout:",
+        dropout_val_accuracy
+    )
+
+Observation: Dropout randomly disables 50% of the selected layer outputs
+during training. This usually lowers training accuracy initially but can
+improve generalization and reduce overfitting.
+
+Task 4: Model with Batch Normalization
+
+Batch Normalization should be placed before the activation function in
+each Dense block.
+
+    from tensorflow import keras
+    from tensorflow.keras import layers
+    import matplotlib.pyplot as plt
+
+    model_bn = keras.Sequential([
+        layers.Input(shape=(28, 28)),
+        layers.Flatten(),
+
+        layers.Dense(128, use_bias=False),
+        layers.BatchNormalization(),
+        layers.Activation("relu"),
+
+        layers.Dense(64, use_bias=False),
+        layers.BatchNormalization(),
+        layers.Activation("relu"),
+
+        layers.Dense(10, activation="softmax")
+    ])
+
+    model_bn.compile(
+        optimizer="adam",
+        loss="sparse_categorical_crossentropy",
+        metrics=["accuracy"]
+    )
+
+    history_bn = model_bn.fit(
+        x_train,
+        y_train,
+        epochs=5,
+        batch_size=128,
+        validation_split=0.2
+    )
+
+    # Plot training and validation accuracy
+    plt.plot(
+        history_bn.history["accuracy"],
+        label="Training Accuracy"
+    )
+
+    plt.plot(
+        history_bn.history["val_accuracy"],
+        label="Validation Accuracy"
+    )
+
+    plt.xlabel("Epoch")
+    plt.ylabel("Accuracy")
+    plt.title("Batch Normalization Accuracy Curves")
+    plt.legend()
+    plt.grid(True)
+    plt.show()
+
+Explanation: Batch Normalization normalizes intermediate activations
+during training. It can make optimization more stable and may allow the
+network to converge faster. The plotted curves can be used to compare
+training and validation performance across epochs.
+
+Task 5: Early Stopping
+
+To clearly demonstrate EarlyStopping, the maximum number of epochs is
+increased. Training will stop when validation loss does not improve for
+2 consecutive epochs.
+
+    from tensorflow import keras
+    from tensorflow.keras import layers
+
+    model_early = keras.Sequential([
+        layers.Input(shape=(28, 28)),
+        layers.Flatten(),
+        layers.Dense(128, activation="relu"),
+        layers.Dense(64, activation="relu"),
+        layers.Dense(10, activation="softmax")
+    ])
+
+    model_early.compile(
+        optimizer="adam",
+        loss="sparse_categorical_crossentropy",
+        metrics=["accuracy"]
+    )
+
+    early_stopping = keras.callbacks.EarlyStopping(
+        monitor="val_loss",
+        patience=2,
+        restore_best_weights=True
+    )
+
+    history_early = model_early.fit(
+        x_train,
+        y_train,
+        epochs=30,
+        batch_size=128,
+        validation_split=0.2,
+        callbacks=[early_stopping]
+    )
+
+    epochs_completed = len(history_early.history["loss"])
+
+    final_val_accuracy = model_early.evaluate(
+        x_test,
+        y_test,
+        verbose=0
+    )[1]
+
+    print("Number of epochs completed:", epochs_completed)
+    print("Final validation/test accuracy:", final_val_accuracy)
+
+Explanation: EarlyStopping monitors validation loss and stops training
+when the model stops improving for 2 consecutive epochs. This can reduce
+unnecessary training and help prevent overfitting. Because
+restore_best_weights=True is used, the model returns to the weights from
+the best validation-loss epoch.
+
+Comparison Summary
+
+1.  No Regularization: Provides a baseline for comparison but may be
+    more likely to overfit.
+
+2.  L2 Regularization: Penalizes large weights and encourages simpler
+    model parameters.
+
+3.  Dropout: Randomly disables neurons during training, reducing
+    dependence on specific neurons.
+
+4.  Batch Normalization: Normalizes intermediate activations and can
+    make training more stable.
+
+5.  Early Stopping: Stops training when validation performance stops
+    improving, saving training time and helping prevent overfitting.
+
+Conclusion
+
+This assignment demonstrates several important regularization and
+training techniques for neural networks. The actual validation accuracy
+should be recorded after running each experiment because results can
+vary slightly between executions.

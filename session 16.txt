@@ -1,0 +1,574 @@
+Session 16 - Deep Learning Assignment
+
+Task 1: Experimenting with Layers and Neurons on MNIST
+
+The following code trains different neural network architectures and
+compares their validation accuracy.
+
+    import tensorflow as tf
+    from tensorflow import keras
+    from tensorflow.keras import layers
+
+    # Load MNIST dataset
+    (x_train, y_train), (x_test, y_test) = keras.datasets.mnist.load_data()
+
+    # Normalize pixel values
+    x_train = x_train.astype("float32") / 255.0
+    x_test = x_test.astype("float32") / 255.0
+
+    def create_model(hidden_layers):
+        model = keras.Sequential([
+            layers.Input(shape=(28, 28)),
+            layers.Flatten()
+        ])
+
+        for neurons in hidden_layers:
+            model.add(
+                layers.Dense(
+                    neurons,
+                    activation="relu"
+                )
+            )
+
+        model.add(
+            layers.Dense(
+                10,
+                activation="softmax"
+            )
+        )
+
+        model.compile(
+            optimizer="adam",
+            loss="sparse_categorical_crossentropy",
+            metrics=["accuracy"]
+        )
+
+        return model
+
+    # Different architectures
+    architectures = [
+        [32],
+        [64],
+        [128],
+        [64, 32],
+        [128, 64]
+    ]
+
+    results = {}
+
+    for architecture in architectures:
+
+        print(
+            "\nTraining architecture:",
+            architecture
+        )
+
+        model = create_model(
+            architecture
+        )
+
+        history = model.fit(
+            x_train,
+            y_train,
+            epochs=5,
+            batch_size=64,
+            validation_split=0.2,
+            verbose=1
+        )
+
+        final_accuracy = history.history[
+            "val_accuracy"
+        ][-1]
+
+        results[
+            str(architecture)
+        ] = final_accuracy
+
+    print("\nValidation Accuracy Comparison:")
+
+    for architecture, accuracy in results.items():
+        print(
+            architecture,
+            ":",
+            accuracy
+        )
+
+Observation:
+
+A model with more neurons can usually learn more complex patterns than a
+very small model. Adding another hidden layer can also improve
+performance, but larger models require more computation and may overfit
+if they are unnecessarily complex.
+
+The exact validation accuracy should be recorded after running each
+model.
+
+Task 2: Experimenting with Batch Sizes and Epochs
+
+The following program trains the same MNIST model using different
+combinations of batch size and number of epochs.
+
+    import time
+
+    batch_sizes = [
+        16,
+        32,
+        64
+    ]
+
+    epoch_values = [
+        5,
+        10,
+        20
+    ]
+
+    experiment_results = []
+
+    for batch_size in batch_sizes:
+
+        for epochs in epoch_values:
+
+            model = keras.Sequential([
+                layers.Input(
+                    shape=(28, 28)
+                ),
+
+                layers.Flatten(),
+
+                layers.Dense(
+                    64,
+                    activation="relu"
+                ),
+
+                layers.Dense(
+                    10,
+                    activation="softmax"
+                )
+            ])
+
+            model.compile(
+                optimizer="adam",
+                loss="sparse_categorical_crossentropy",
+                metrics=["accuracy"]
+            )
+
+            start_time = time.time()
+
+            history = model.fit(
+                x_train,
+                y_train,
+                batch_size=batch_size,
+                epochs=epochs,
+                validation_split=0.2,
+                verbose=0
+            )
+
+            end_time = time.time()
+
+            training_time = (
+                end_time
+                - start_time
+            )
+
+            validation_accuracy = (
+                history.history[
+                    "val_accuracy"
+                ][-1]
+            )
+
+            experiment_results.append(
+                (
+                    batch_size,
+                    epochs,
+                    training_time,
+                    validation_accuracy
+                )
+            )
+
+    for result in experiment_results:
+
+        print(
+            "Batch Size:",
+            result[0],
+            "| Epochs:",
+            result[1],
+            "| Training Time:",
+            round(
+                result[2],
+                2
+            ),
+            "seconds",
+            "| Validation Accuracy:",
+            round(
+                result[3],
+                4
+            )
+        )
+
+Observation:
+
+Smaller batch sizes perform more weight updates during each epoch and
+may take longer to train. Larger batch sizes can train faster on
+suitable hardware.
+
+Increasing the number of epochs gives the model more opportunities to
+learn, but training for too many epochs may eventually cause
+overfitting.
+
+The exact training time depends on the computer’s CPU or GPU.
+
+Task 3: Comparing SGD, Adam, and RMSprop
+
+    import matplotlib.pyplot as plt
+
+    optimizers = {
+        "SGD": keras.optimizers.SGD(),
+        "Adam": keras.optimizers.Adam(),
+        "RMSprop": keras.optimizers.RMSprop()
+    }
+
+    histories = {}
+
+    for optimizer_name, optimizer in optimizers.items():
+
+        print(
+            "Training with:",
+            optimizer_name
+        )
+
+        model = keras.Sequential([
+            layers.Input(
+                shape=(28, 28)
+            ),
+
+            layers.Flatten(),
+
+            layers.Dense(
+                64,
+                activation="relu"
+            ),
+
+            layers.Dense(
+                10,
+                activation="softmax"
+            )
+        ])
+
+        model.compile(
+            optimizer=optimizer,
+            loss="sparse_categorical_crossentropy",
+            metrics=["accuracy"]
+        )
+
+        history = model.fit(
+            x_train,
+            y_train,
+            epochs=10,
+            batch_size=64,
+            validation_split=0.2,
+            verbose=1
+        )
+
+        histories[
+            optimizer_name
+        ] = history
+
+    # Plot training loss
+    plt.figure(figsize=(10, 6))
+
+    for name, history in histories.items():
+
+        plt.plot(
+            history.history["loss"],
+            label=name + " Training Loss"
+        )
+
+    plt.xlabel("Epoch")
+    plt.ylabel("Loss")
+    plt.title(
+        "Training Loss Comparison"
+    )
+    plt.legend()
+    plt.grid(True)
+    plt.show()
+
+    # Plot validation loss
+    plt.figure(figsize=(10, 6))
+
+    for name, history in histories.items():
+
+        plt.plot(
+            history.history[
+                "val_loss"
+            ],
+            label=name + " Validation Loss"
+        )
+
+    plt.xlabel("Epoch")
+    plt.ylabel("Loss")
+    plt.title(
+        "Validation Loss Comparison"
+    )
+    plt.legend()
+    plt.grid(True)
+    plt.show()
+
+Observation:
+
+Adam often converges quickly because it uses adaptive learning rates and
+momentum-like calculations.
+
+RMSprop also adapts learning rates based on recent gradients and often
+performs well.
+
+Basic SGD may converge more slowly with its default settings but can
+perform strongly when its learning rate and momentum are carefully
+tuned.
+
+Task 4: Hyperparameter Tuning with KerasTuner
+
+Install KerasTuner using:
+
+    pip install keras-tuner
+
+The following code uses Hyperband to search for the best number of
+neurons in the first hidden layer.
+
+    import keras_tuner as kt
+    from tensorflow import keras
+    from tensorflow.keras import layers
+
+    def build_model(hp):
+
+        model = keras.Sequential([
+            layers.Input(
+                shape=(28, 28)
+            ),
+
+            layers.Flatten(),
+
+            layers.Dense(
+                units=hp.Int(
+                    "units",
+                    min_value=32,
+                    max_value=256,
+                    step=32
+                ),
+                activation="relu"
+            ),
+
+            layers.Dense(
+                10,
+                activation="softmax"
+            )
+        ])
+
+        model.compile(
+            optimizer="adam",
+            loss="sparse_categorical_crossentropy",
+            metrics=["accuracy"]
+        )
+
+        return model
+
+    tuner = kt.Hyperband(
+        build_model,
+        objective="val_accuracy",
+        max_epochs=10,
+        factor=3,
+        directory="mnist_tuning",
+        project_name="mnist_classifier"
+    )
+
+    tuner.search(
+        x_train,
+        y_train,
+        epochs=10,
+        validation_split=0.2,
+        callbacks=[
+            keras.callbacks.EarlyStopping(
+                monitor="val_loss",
+                patience=2
+            )
+        ]
+    )
+
+    best_hyperparameters = (
+        tuner.get_best_hyperparameters(
+            num_trials=1
+        )[0]
+    )
+
+    best_units = (
+        best_hyperparameters.get(
+            "units"
+        )
+    )
+
+    print(
+        "Best number of neurons:",
+        best_units
+    )
+
+    best_model = (
+        tuner.get_best_models(
+            num_models=1
+        )[0]
+    )
+
+    best_model.summary()
+
+Report:
+
+The search space contains the following possible values:
+
+32, 64, 96, 128, 160, 192, 224, and 256 neurons.
+
+The best configuration is printed automatically after the KerasTuner
+search.
+
+Example report format:
+
+Best number of neurons found: [record the value printed by the program]
+
+The exact best configuration can vary slightly between runs because
+neural network training and hyperparameter search contain random
+elements.
+
+Task 5: Comparing Weight Initialization Methods
+
+The following code compares:
+
+1.  He Normal
+2.  Glorot Uniform
+3.  Random Normal
+
+    import time
+
+    initializers = [
+        "he_normal",
+        "glorot_uniform",
+        "random_normal"
+    ]
+
+    initializer_results = {}
+
+    for initializer in initializers:
+
+        print(
+            "\nTraining with:",
+            initializer
+        )
+
+        model = keras.Sequential([
+            layers.Input(
+                shape=(28, 28)
+            ),
+
+            layers.Flatten(),
+
+            layers.Dense(
+                128,
+                activation="relu",
+                kernel_initializer=initializer
+            ),
+
+            layers.Dense(
+                64,
+                activation="relu",
+                kernel_initializer=initializer
+            ),
+
+            layers.Dense(
+                10,
+                activation="softmax",
+                kernel_initializer=initializer
+            )
+        ])
+
+        model.compile(
+            optimizer="adam",
+            loss="sparse_categorical_crossentropy",
+            metrics=["accuracy"]
+        )
+
+        start_time = time.time()
+
+        history = model.fit(
+            x_train,
+            y_train,
+            epochs=10,
+            batch_size=64,
+            validation_split=0.2,
+            verbose=1
+        )
+
+        training_time = (
+            time.time()
+            - start_time
+        )
+
+        final_accuracy = (
+            history.history[
+                "val_accuracy"
+            ][-1]
+        )
+
+        initializer_results[
+            initializer
+        ] = {
+            "time": training_time,
+            "accuracy": final_accuracy
+        }
+
+    print(
+        "\nWeight Initialization Comparison:"
+    )
+
+    for initializer, result in (
+        initializer_results.items()
+    ):
+
+        print(
+            initializer,
+            "| Training Time:",
+            round(
+                result["time"],
+                2
+            ),
+            "seconds",
+            "| Validation Accuracy:",
+            round(
+                result["accuracy"],
+                4
+            )
+        )
+
+Comparison:
+
+He Normal: He initialization is designed to work well with ReLU
+activation functions. It helps maintain a useful scale of activations
+through the network.
+
+Glorot Uniform: Glorot or Xavier initialization balances the variance of
+signals between layers and is a strong general-purpose initialization
+method.
+
+Random Normal: Random Normal initialization draws weights from a normal
+distribution. Depending on its scale, it may converge differently
+compared with initialization methods specifically designed for deep
+networks.
+
+The actual training speed and accuracy should be recorded after running
+the experiments on the same hardware.
+
+Conclusion
+
+This assignment demonstrates several important neural network
+hyperparameters. The number of layers, number of neurons, batch size,
+training epochs, optimizer, and weight initialization method can all
+affect training speed and model accuracy.
+
+KerasTuner can automate part of the hyperparameter search process and
+help identify better configurations without manually testing every
+possible model.

@@ -1,0 +1,320 @@
+Session 15 - Deep Learning Assignment
+
+Task 1: Train a Fashion MNIST Model and Plot Loss Curves
+
+    import tensorflow as tf
+    from tensorflow import keras
+    from tensorflow.keras import layers
+    import matplotlib.pyplot as plt
+
+    # Load dataset
+    (x_train, y_train), (x_test, y_test) = (
+        keras.datasets.fashion_mnist.load_data()
+    )
+
+    # Normalize images
+    x_train = x_train.astype("float32") / 255.0
+    x_test = x_test.astype("float32") / 255.0
+
+    # Create model
+    model = keras.Sequential([
+        layers.Input(shape=(28, 28)),
+        layers.Flatten(),
+        layers.Dense(128, activation="relu"),
+        layers.Dense(64, activation="relu"),
+        layers.Dense(10, activation="softmax")
+    ])
+
+    model.compile(
+        optimizer="adam",
+        loss="sparse_categorical_crossentropy",
+        metrics=["accuracy"]
+    )
+
+    # Train model
+    history = model.fit(
+        x_train,
+        y_train,
+        epochs=10,
+        batch_size=128,
+        validation_split=0.2
+    )
+
+    # Plot loss curves
+    plt.plot(
+        history.history["loss"],
+        label="Training Loss"
+    )
+
+    plt.plot(
+        history.history["val_loss"],
+        label="Validation Loss"
+    )
+
+    plt.xlabel("Epoch")
+    plt.ylabel("Loss")
+    plt.title("Training and Validation Loss")
+    plt.legend()
+    plt.grid(True)
+    plt.show()
+
+Explanation: The training loss shows how well the model fits the
+training data, while validation loss shows how well it performs on
+unseen validation data.
+
+Task 2: Intentionally Overfit a Small Dataset
+
+    from tensorflow import keras
+    from tensorflow.keras import layers
+    import matplotlib.pyplot as plt
+
+    # Use only 500 training samples
+    small_x_train = x_train[:500]
+    small_y_train = y_train[:500]
+
+    # Use another 500 samples for validation
+    small_x_val = x_train[500:1000]
+    small_y_val = y_train[500:1000]
+
+    # Create a relatively large model
+    overfit_model = keras.Sequential([
+        layers.Input(shape=(28, 28)),
+        layers.Flatten(),
+        layers.Dense(512, activation="relu"),
+        layers.Dense(256, activation="relu"),
+        layers.Dense(128, activation="relu"),
+        layers.Dense(10, activation="softmax")
+    ])
+
+    overfit_model.compile(
+        optimizer="adam",
+        loss="sparse_categorical_crossentropy",
+        metrics=["accuracy"]
+    )
+
+    history_overfit = overfit_model.fit(
+        small_x_train,
+        small_y_train,
+        epochs=50,
+        batch_size=32,
+        validation_data=(
+            small_x_val,
+            small_y_val
+        )
+    )
+
+    plt.plot(
+        history_overfit.history["loss"],
+        label="Training Loss"
+    )
+
+    plt.plot(
+        history_overfit.history["val_loss"],
+        label="Validation Loss"
+    )
+
+    plt.xlabel("Epoch")
+    plt.ylabel("Loss")
+    plt.title("Overfitting on a Small Dataset")
+    plt.legend()
+    plt.grid(True)
+    plt.show()
+
+Two Signs of Overfitting:
+
+1.  Training loss continues decreasing while validation loss stops
+    decreasing and begins increasing.
+
+2.  A growing gap appears between training and validation performance,
+    showing that the model is memorizing the small training dataset
+    instead of generalizing well to unseen data.
+
+Task 3: EarlyStopping Callback
+
+    from tensorflow import keras
+    from tensorflow.keras import layers
+
+    early_model = keras.Sequential([
+        layers.Input(shape=(28, 28)),
+        layers.Flatten(),
+        layers.Dense(128, activation="relu"),
+        layers.Dense(64, activation="relu"),
+        layers.Dense(10, activation="softmax")
+    ])
+
+    early_model.compile(
+        optimizer="adam",
+        loss="sparse_categorical_crossentropy",
+        metrics=["accuracy"]
+    )
+
+    early_stopping = keras.callbacks.EarlyStopping(
+        monitor="val_loss",
+        patience=3,
+        restore_best_weights=True
+    )
+
+    history_early = early_model.fit(
+        x_train,
+        y_train,
+        epochs=50,
+        batch_size=128,
+        validation_split=0.2,
+        callbacks=[early_stopping]
+    )
+
+    epochs_completed = len(
+        history_early.history["loss"]
+    )
+
+    print(
+        "Training stopped after",
+        epochs_completed,
+        "epochs."
+    )
+
+Explanation: The exact stopping epoch depends on the training run.
+EarlyStopping ends training when validation loss fails to improve for
+three consecutive epochs and restores the best model weights.
+
+Task 4: Accuracy, Precision, and Recall
+
+Install scikit-learn if necessary:
+
+    pip install scikit-learn
+
+Then evaluate the model:
+
+    import numpy as np
+
+    from sklearn.metrics import (
+        accuracy_score,
+        precision_score,
+        recall_score
+    )
+
+    # Predict probabilities
+    y_prob = model.predict(x_test)
+
+    # Convert probabilities to class labels
+    y_pred = np.argmax(
+        y_prob,
+        axis=1
+    )
+
+    # Calculate metrics
+    accuracy = accuracy_score(
+        y_test,
+        y_pred
+    )
+
+    precision = precision_score(
+        y_test,
+        y_pred,
+        average="weighted",
+        zero_division=0
+    )
+
+    recall = recall_score(
+        y_test,
+        y_pred,
+        average="weighted",
+        zero_division=0
+    )
+
+    print("Test Accuracy:", accuracy)
+    print("Weighted Precision:", precision)
+    print("Weighted Recall:", recall)
+
+Explanation: Accuracy measures the overall percentage of correct
+predictions. Precision measures how reliable the predicted classes are,
+while recall measures how successfully the model identifies samples
+belonging to each class.
+
+Task 5: ROC Curve and Multiclass AUC Score
+
+For multiclass classification, ROC curves can be calculated using a
+one-vs-rest approach. The following code calculates the overall
+multiclass AUC and plots a ROC curve for each Fashion MNIST class.
+
+    import numpy as np
+    import matplotlib.pyplot as plt
+
+    from sklearn.preprocessing import label_binarize
+
+    from sklearn.metrics import (
+        roc_curve,
+        roc_auc_score
+    )
+
+    # Model probabilities for all 10 classes
+    y_score = model.predict(x_test)
+
+    # Convert true labels to one-hot format
+    y_test_binary = label_binarize(
+        y_test,
+        classes=np.arange(10)
+    )
+
+    # Calculate multiclass AUC
+    auc_score = roc_auc_score(
+        y_test_binary,
+        y_score,
+        multi_class="ovr",
+        average="macro"
+    )
+
+    print(
+        "Macro One-vs-Rest AUC Score:",
+        auc_score
+    )
+
+    # Plot ROC curve for each class
+    for class_index in range(10):
+
+        fpr, tpr, thresholds = roc_curve(
+            y_test_binary[:, class_index],
+            y_score[:, class_index]
+        )
+
+        plt.plot(
+            fpr,
+            tpr,
+            label="Class " + str(class_index)
+        )
+
+    # Random classifier reference line
+    plt.plot(
+        [0, 1],
+        [0, 1],
+        linestyle="--",
+        label="Random Classifier"
+    )
+
+    plt.xlabel("False Positive Rate")
+    plt.ylabel("True Positive Rate")
+    plt.title("Fashion MNIST Multiclass ROC Curves")
+    plt.legend()
+    plt.grid(True)
+    plt.show()
+
+Fashion MNIST Class Labels:
+
+0 = T-shirt/top 1 = Trouser 2 = Pullover 3 = Dress 4 = Coat 5 = Sandal 6
+= Shirt 7 = Sneaker 8 = Bag 9 = Ankle boot
+
+Explanation: ROC curves compare the true positive rate with the false
+positive rate at different classification thresholds. For multiclass
+Fashion MNIST, the one-vs-rest method treats each class as the positive
+class against all remaining classes.
+
+The AUC score summarizes classification performance across thresholds. A
+value closer to 1 indicates better discrimination between classes.
+
+Conclusion
+
+This assignment demonstrates model evaluation and overfitting analysis
+using Fashion MNIST. Training and validation loss curves help identify
+overfitting, EarlyStopping prevents unnecessary training, and metrics
+such as accuracy, precision, recall, ROC, and AUC provide a broader
+understanding of model performance.

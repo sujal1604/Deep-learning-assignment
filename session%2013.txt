@@ -1,0 +1,243 @@
+Session 13 - Deep Learning Assignment
+
+Task 1: Install TensorFlow and Create the Python File
+
+Install TensorFlow using:
+
+    pip install tensorflow
+
+Create a new Python file named:
+
+spotify_like_classifier.py
+
+TensorFlow includes the Keras API, so Keras can be imported from
+TensorFlow.
+
+Tasks 2, 3, 4 and 5: Complete spotify_like_classifier.py Program
+
+The following complete script creates the required neural network,
+compiles it, generates a small dataset, trains the model, and uses
+EarlyStopping.
+
+    import numpy as np
+    import tensorflow as tf
+    from tensorflow import keras
+    from tensorflow.keras import layers
+
+    # Set random seeds for reproducibility
+    np.random.seed(42)
+    tf.random.set_seed(42)
+
+    # -------------------------------------------------
+    # Create a simulated dataset with 100 user profiles
+    # -------------------------------------------------
+
+    number_of_samples = 100
+
+    # Listening time between 0 and 10 hours
+    listening_time = np.random.uniform(
+        0,
+        10,
+        number_of_samples
+    )
+
+    # Liked genre score between 0 and 1
+    liked_genre_score = np.random.uniform(
+        0,
+        1,
+        number_of_samples
+    )
+
+    # Combine features
+    X = np.column_stack((
+        listening_time,
+        liked_genre_score
+    ))
+
+    # Create binary labels
+    # A user is more likely to like the song when
+    # listening time and genre preference are high.
+    liked_song = (
+        (listening_time / 10)
+        + liked_genre_score
+        > 1
+    ).astype(int)
+
+    y = liked_song
+
+    # -------------------------------------------------
+    # Define the Sequential neural network
+    # -------------------------------------------------
+
+    model = keras.Sequential([
+        layers.Input(shape=(2,)),
+
+        layers.Dense(
+            16,
+            activation="relu"
+        ),
+
+        layers.Dense(
+            8,
+            activation="relu"
+        ),
+
+        layers.Dense(
+            1,
+            activation="sigmoid"
+        )
+    ])
+
+    # -------------------------------------------------
+    # Compile the model
+    # -------------------------------------------------
+
+    model.compile(
+        optimizer="adam",
+        loss="binary_crossentropy",
+        metrics=["accuracy"]
+    )
+
+    # Display model structure
+    model.summary()
+
+    # -------------------------------------------------
+    # Add EarlyStopping callback
+    # -------------------------------------------------
+
+    early_stopping = keras.callbacks.EarlyStopping(
+        monitor="val_loss",
+        patience=3,
+        restore_best_weights=True
+    )
+
+    # -------------------------------------------------
+    # Train the model
+    # -------------------------------------------------
+
+    history = model.fit(
+        X,
+        y,
+        epochs=20,
+        batch_size=8,
+        validation_split=0.2,
+        callbacks=[early_stopping],
+        verbose=1
+    )
+
+    # -------------------------------------------------
+    # Print final accuracy
+    # -------------------------------------------------
+
+    final_training_accuracy = history.history[
+        "accuracy"
+    ][-1]
+
+    final_validation_accuracy = history.history[
+        "val_accuracy"
+    ][-1]
+
+    epochs_completed = len(
+        history.history["loss"]
+    )
+
+    print(
+        "Final Training Accuracy:",
+        final_training_accuracy
+    )
+
+    print(
+        "Final Validation Accuracy:",
+        final_validation_accuracy
+    )
+
+    print(
+        "Number of Epochs Completed:",
+        epochs_completed
+    )
+
+Task 2 Explanation:
+
+The model contains three Dense layers:
+
+-   First Dense layer: 16 neurons with ReLU activation
+-   Second Dense layer: 8 neurons with ReLU activation
+-   Output Dense layer: 1 neuron with sigmoid activation
+
+The input shape is 2 because every user profile contains two features:
+listening_time and liked_genre_score.
+
+Task 3 Explanation:
+
+The model is compiled using:
+
+Optimizer: Adam
+
+Loss Function: Binary Cross-Entropy
+
+Metric: Accuracy
+
+Binary Cross-Entropy is appropriate because liked_song contains two
+possible classes: 0 and 1.
+
+Task 4 Explanation:
+
+The program generates 100 random user profiles using NumPy.
+
+Each profile contains:
+
+1.  listening_time
+2.  liked_genre_score
+
+The binary liked_song label is generated using a simple rule based on
+both input features.
+
+The model is trained using model.fit() for a maximum of 20 epochs. After
+training, the program prints the final training and validation accuracy.
+
+The exact accuracy may vary slightly between runs because neural network
+training includes random initialization and data splitting.
+
+Task 5 Explanation:
+
+The EarlyStopping callback monitors validation loss.
+
+    early_stopping = keras.callbacks.EarlyStopping(
+        monitor="val_loss",
+        patience=3,
+        restore_best_weights=True
+    )
+
+If validation loss does not improve for 3 consecutive epochs, training
+stops automatically.
+
+The restore_best_weights=True option restores the model weights from the
+epoch that achieved the best validation loss.
+
+This helps reduce unnecessary training and can prevent overfitting.
+
+How to Run the Program
+
+Save the complete code in:
+
+spotify_like_classifier.py
+
+Then run:
+
+    python spotify_like_classifier.py
+
+The program will display:
+
+-   Model summary
+-   Training progress
+-   Training accuracy
+-   Validation accuracy
+-   Number of epochs completed
+
+Conclusion
+
+This assignment demonstrates how to build a complete binary
+classification neural network using Keras. The model uses simulated
+Spotify user data, Dense layers, Adam optimization, Binary Cross-Entropy
+loss, and EarlyStopping to predict whether a user is likely to like a
+song.

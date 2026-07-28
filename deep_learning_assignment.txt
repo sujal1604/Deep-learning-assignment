@@ -1,0 +1,100 @@
+Deep Learning Assignment
+
+1.  TensorFlow Playground Experiment
+
+I opened TensorFlow Playground and created a simple neural network for
+classifying the orange and blue dots.
+
+Network configuration: - Input features: Selected suitable input
+features such as X1 and X2. - Hidden layers: 1 hidden layer - Neurons: 3
+neurons in the hidden layer - Output: Classification of orange and blue
+dots
+
+Learning Rate Observation: First, I used a low learning rate. The model
+learned slowly and took more training iterations to form a clear
+decision boundary. The changes in the decision boundary were gradual and
+stable.
+
+Then, I used a higher learning rate. The model learned faster and the
+decision boundary changed more quickly. However, if the learning rate
+was too high, the training became less stable and could overshoot the
+best solution.
+
+Conclusion: A low learning rate provides slower but more stable
+learning, while a moderately high learning rate can converge faster. A
+very high learning rate may make training unstable. Therefore, choosing
+an appropriate learning rate is important for effective neural network
+training.
+
+2.  Biological Neuron vs Artificial Neuron
+
+Biological Neuron: Dendrites → Soma (Cell Body) → Axon → Output Signal
+
+Artificial Neuron: Inputs → Weights → Weighted Sum/Processing →
+Activation Function → Output
+
+Comparison: - Dendrites correspond to the inputs of an artificial
+neuron. - The soma processes incoming biological signals, similar to the
+weighted sum performed by an artificial neuron. - Synaptic strengths are
+similar to weights, which determine the importance of each input. - The
+activation function decides whether and how strongly the artificial
+neuron should produce an output. - The axon carries the output signal,
+similar to the output produced by an artificial neuron.
+
+3.  Daily Apps That Likely Use Deep Learning
+
+Instagram: Feature: Personalized feed and Reels recommendations. Deep
+learning can analyze a user’s interactions, such as likes, viewing
+behavior, and engagement patterns, to recommend content that is more
+relevant to the user’s interests.
+
+Spotify: Feature: Music recommendations. Deep learning can learn
+patterns from listening history, song characteristics, and user
+preferences to recommend songs, artists, and playlists that a user may
+enjoy.
+
+Zomato: Feature: Restaurant and food recommendations. Deep learning can
+analyze previous orders, searches, preferred cuisines, location-related
+patterns, and other behavior to suggest restaurants and dishes that are
+more likely to match a user’s preferences.
+
+4.  Workflow for Building a Deep Learning Movie Recommendation Model
+
+Step 1: Data Collection Collect data such as user IDs, movie IDs,
+ratings, watch history, likes, searches, genres, and other movie
+information.
+
+Step 2: Data Preprocessing Clean the collected data by handling missing
+values, removing duplicates, and converting categorical information into
+a suitable numerical format. Split the dataset into training,
+validation, and testing sets.
+
+Step 3: Model Selection and Design Choose a suitable recommendation
+model. A deep learning system can use user and movie embeddings to learn
+relationships between users and movies. Additional features such as
+genres and viewing history can also be included.
+
+Step 4: Model Training Train the model using the training dataset.
+During training, the model adjusts its weights to reduce prediction
+error and learn user preferences.
+
+Step 5: Evaluation Evaluate the trained model using validation and test
+data. Suitable recommendation metrics can be used to check how
+accurately the model recommends relevant movies. If performance is poor,
+tune the model’s hyperparameters and train it again.
+
+Step 6: Generate Recommendations Use the trained model to predict which
+movies each user is most likely to enjoy. Rank the predicted movies and
+return the top recommendations.
+
+Step 7: Deployment Deploy the trained model through a backend service or
+API and connect it to a website or mobile application. When a user opens
+the app, the recommendation system can provide personalized movie
+suggestions.
+
+Step 8: Monitoring and Improvement Monitor the model after deployment
+and collect new user interactions. Periodically retrain and update the
+model so that recommendations improve as user preferences change.
+
+Overall Workflow: Data → Preprocessing → Model Design → Training →
+Evaluation → Recommendations → Deployment → Monitoring

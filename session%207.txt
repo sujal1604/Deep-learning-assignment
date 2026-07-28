@@ -1,0 +1,137 @@
+Session 7 - Deep Learning Assignment
+
+Task 1: Mean Squared Error Function
+
+The Mean Squared Error measures the average squared difference between
+predictions and actual target values.
+
+    def calculate_mse(predictions, targets):
+        total_squared_error = 0
+
+        for prediction, target in zip(predictions, targets):
+            error = prediction - target
+            total_squared_error += error ** 2
+
+        mse = total_squared_error / len(predictions)
+        return mse
+
+    predictions = [3, 5, 2, 7]
+    targets = [4, 5, 3, 6]
+
+    result = calculate_mse(predictions, targets)
+
+    print("Mean Squared Error:", result)
+
+Explanation: MSE squares every prediction error, adds all squared
+errors, and divides the total by the number of samples. Larger errors
+receive a greater penalty because they are squared.
+
+Task 2: Mean Absolute Error for Ratings
+
+    actual_ratings = [4, 3, 5, 2, 1]
+    predicted_ratings = [5, 2, 4, 2, 1]
+
+    total_error = 0
+
+    for actual, predicted in zip(actual_ratings, predicted_ratings):
+        total_error += abs(actual - predicted)
+
+    mae = total_error / len(actual_ratings)
+
+    print("Mean Absolute Error:", mae)
+
+Expected Output:
+
+Mean Absolute Error: 0.6
+
+Explanation: MAE calculates the average absolute difference between
+actual and predicted values. Unlike MSE, it does not square the errors.
+
+Task 3: Binary Cross-Entropy Loss
+
+    import math
+
+    def binary_cross_entropy(y_true, y_pred):
+        total_loss = 0
+
+        for actual, predicted in zip(y_true, y_pred):
+
+            # Prevent log(0)
+            predicted = max(min(predicted, 1 - 1e-15), 1e-15)
+
+            loss = -(
+                actual * math.log(predicted)
+                + (1 - actual) * math.log(1 - predicted)
+            )
+
+            total_loss += loss
+
+        return total_loss / len(y_true)
+
+
+    y_true = [1, 0, 1]
+    y_pred = [0.9, 0.2, 0.7]
+
+    loss = binary_cross_entropy(y_true, y_pred)
+
+    print("Binary Cross-Entropy Loss:", loss)
+
+Explanation: Binary Cross-Entropy is commonly used for binary
+classification. It gives a larger penalty when the model is confidently
+incorrect and rewards predictions that assign high probability to the
+correct class.
+
+Task 4: Categorical Cross-Entropy Calculation
+
+    import math
+
+    y_true = [0, 0, 1]
+    y_pred = [0.2, 0.3, 0.5]
+
+    loss = 0
+
+    for actual, predicted in zip(y_true, y_pred):
+        if actual == 1:
+            loss += -math.log(predicted)
+
+    print("Categorical Cross-Entropy Loss:", loss)
+
+Expected Output:
+
+Categorical Cross-Entropy Loss: approximately 0.693
+
+Explanation: The correct class is the third class because its true label
+is 1. Therefore, categorical cross-entropy calculates the negative
+logarithm of the predicted probability for the third class:
+
+Loss = -log(0.5)
+
+Loss is approximately 0.693.
+
+Task 5: Real-World Loss Function Example
+
+App: Instagram
+
+Scenario: Suppose Instagram uses a deep learning model to classify an
+uploaded image into one of several categories, such as food, travel,
+sports, fashion, or nature.
+
+Best Loss Function: Categorical Cross-Entropy
+
+Reason: Categorical Cross-Entropy is suitable because the model must
+select one category from multiple possible classes. It compares the
+predicted probability distribution with the actual class and strongly
+penalizes incorrect confident predictions.
+
+Another example would be predicting whether a user will click on a
+recommended post. Since this is a binary yes-or-no classification
+problem, Binary Cross-Entropy would be more suitable.
+
+Conclusion
+
+Loss functions measure how far a model’s predictions are from the
+correct answers. MSE and MAE are commonly used for regression problems,
+Binary Cross-Entropy is suitable for binary classification, and
+Categorical Cross-Entropy is suitable for multi-class classification.
+Selecting the correct loss function is important for effective model
+training.

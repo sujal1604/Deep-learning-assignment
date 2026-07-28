@@ -1,0 +1,216 @@
+Session 12 - Deep Learning Assignment
+
+Task 1: Install TensorFlow and Keras in a Virtual Environment
+
+Create a new virtual environment:
+
+Windows:
+
+    python -m venv tensorflow_env
+    tensorflow_env\Scripts\activate
+    pip install tensorflow
+
+macOS/Linux:
+
+    python3 -m venv tensorflow_env
+    source tensorflow_env/bin/activate
+    pip install tensorflow
+
+TensorFlow includes the Keras API. After installation, verify it using:
+
+    import tensorflow as tf
+
+    print("TensorFlow version:", tf.__version__)
+    print("TensorFlow imported successfully.")
+
+If the version number is printed without an error, TensorFlow is
+installed correctly.
+
+Task 2: Keras Sequential Model
+
+    import tensorflow as tf
+    from tensorflow import keras
+    from tensorflow.keras import layers
+
+    model = keras.Sequential([
+        layers.Input(shape=(10,)),
+        layers.Dense(32, activation="relu"),
+        layers.Dense(16, activation="relu"),
+        layers.Dense(1, activation="sigmoid")
+    ])
+
+    model.summary()
+
+Explanation: The model accepts 10 input features. The first Dense layer
+contains 32 neurons with ReLU activation, the second contains 16 neurons
+with ReLU, and the final layer contains one sigmoid neuron for binary
+classification.
+
+Task 3: Keras Functional API Model
+
+    import tensorflow as tf
+    from tensorflow import keras
+    from tensorflow.keras import layers
+
+    # Input with 10 features
+    inputs = keras.Input(
+        shape=(10,),
+        name="input_features"
+    )
+
+    # Hidden layer
+    hidden = layers.Dense(
+        20,
+        activation="relu",
+        name="hidden_layer"
+    )(inputs)
+
+    # Output layer
+    outputs = layers.Dense(
+        1,
+        name="output_layer"
+    )(hidden)
+
+    # Create model
+    functional_model = keras.Model(
+        inputs=inputs,
+        outputs=outputs
+    )
+
+    # Display model summary
+    functional_model.summary()
+
+    # Print total parameter count
+    print(
+        "Total Parameters:",
+        functional_model.count_params()
+    )
+
+Parameter Count:
+
+First Dense layer: 10 × 20 weights + 20 biases = 220 parameters
+
+Output layer: 20 × 1 weight + 1 bias = 21 parameters
+
+Total: 220 + 21 = 241 parameters
+
+Task 4: Check Whether TensorFlow Is Using CPU or GPU
+
+    import tensorflow as tf
+
+    # List all physical devices
+    devices = tf.config.list_physical_devices()
+
+    print("Available Physical Devices:")
+
+    for device in devices:
+        print(device)
+
+    # List GPUs
+    gpus = tf.config.list_physical_devices("GPU")
+
+    if gpus:
+        print("\nGPU is available.")
+        print("Available GPUs:", gpus)
+        print("TensorFlow can use the GPU for supported operations.")
+    else:
+        print("\nNo GPU detected.")
+        print("TensorFlow will use the CPU.")
+
+    # Optional device placement test
+    with tf.device("/GPU:0" if gpus else "/CPU:0"):
+        a = tf.constant([[1.0, 2.0]])
+        b = tf.constant([[3.0], [4.0]])
+        result = tf.matmul(a, b)
+
+    print("Computation result:", result.numpy())
+    print("Result device:", result.device)
+
+Note: Older examples may use tf.test.is_gpu_available(), but it is
+deprecated in modern TensorFlow. tf.config.list_physical_devices(“GPU”)
+is the recommended method.
+
+Task 5: Keras Model with Two Inputs
+
+Scenario: The model uses two Spotify-related inputs:
+
+1.  User age
+2.  Number of songs listened
+
+The output predicts the likelihood of purchasing a premium subscription.
+
+    import tensorflow as tf
+    from tensorflow import keras
+    from tensorflow.keras import layers
+
+    # First input: user age
+    age_input = keras.Input(
+        shape=(1,),
+        name="user_age"
+    )
+
+    # Second input: songs listened
+    songs_input = keras.Input(
+        shape=(1,),
+        name="songs_listened"
+    )
+
+    # Combine both inputs
+    combined = layers.Concatenate()([
+        age_input,
+        songs_input
+    ])
+
+    # Hidden layers
+    x = layers.Dense(
+        16,
+        activation="relu"
+    )(combined)
+
+    x = layers.Dense(
+        8,
+        activation="relu"
+    )(x)
+
+    # Binary output
+    output = layers.Dense(
+        1,
+        activation="sigmoid",
+        name="premium_probability"
+    )(x)
+
+    # Create model
+    model = keras.Model(
+        inputs=[age_input, songs_input],
+        outputs=output
+    )
+
+    model.compile(
+        optimizer="adam",
+        loss="binary_crossentropy",
+        metrics=["accuracy"]
+    )
+
+    model.summary()
+
+Errors or Changes Made: The generated code works with modern
+TensorFlow/Keras. The only requirement is to provide the two inputs
+separately in the correct format when training the model.
+
+Example training format:
+
+    model.fit(
+        {
+            "user_age": age_data,
+            "songs_listened": songs_data
+        },
+        labels,
+        epochs=10
+    )
+
+Conclusion
+
+This assignment demonstrates TensorFlow installation, Sequential and
+Functional Keras models, device detection, and multi-input neural
+networks. The Functional API is especially useful when a model has
+multiple inputs, multiple outputs, or more complex connections.

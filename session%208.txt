@@ -1,0 +1,181 @@
+Session 8 - Deep Learning Assignment
+
+Task 1: Numerical Gradient Using Central Difference Method
+
+    def compute_gradient(f, x, h=1e-5):
+        gradient = (f(x + h) - f(x - h)) / (2 * h)
+        return gradient
+
+    def f(x):
+        return x ** 2
+
+    x = 3
+    result = compute_gradient(f, x)
+
+    print("Numerical gradient at x =", x, "is:", result)
+
+Explanation: The central difference method estimates the derivative by
+checking the function value slightly before and after x. For f(x) = x²,
+the exact derivative is 2x, so at x = 3 the gradient is approximately 6.
+
+Task 2: Partial Derivatives of f(x, y) = x² + y²
+
+The partial derivatives are:
+
+df/dx = 2x df/dy = 2y
+
+At x = 3 and y = 4:
+
+df/dx = 6 df/dy = 8
+
+Python code:
+
+    def partial_derivatives(x, y):
+        df_dx = 2 * x
+        df_dy = 2 * y
+        return df_dx, df_dy
+
+    x = 3
+    y = 4
+
+    dx, dy = partial_derivatives(x, y)
+
+    print("Partial derivative with respect to x:", dx)
+    print("Partial derivative with respect to y:", dy)
+
+Output:
+
+Partial derivative with respect to x: 6 Partial derivative with respect
+to y: 8
+
+Task 3: One Step of Gradient Descent
+
+Given:
+
+f(w) = (w - 5)²
+
+The gradient is:
+
+df/dw = 2(w - 5)
+
+Starting value: w = 0
+
+Learning rate: 0.1
+
+    def gradient(w):
+        return 2 * (w - 5)
+
+    w = 0
+    learning_rate = 0.1
+
+    grad = gradient(w)
+
+    w = w - learning_rate * grad
+
+    print("Updated value of w:", w)
+
+Output:
+
+Updated value of w: 1.0
+
+Explanation: At w = 0, the gradient is -10. Gradient descent updates w
+in the opposite direction of the gradient, moving it from 0 toward the
+minimum at w = 5.
+
+Task 4: Effect of Different Learning Rates
+
+    import matplotlib.pyplot as plt
+
+    def gradient(x):
+        return 2 * (x - 3)
+
+    learning_rates = [0.01, 0.1, 0.5]
+    iterations = 20
+
+    for learning_rate in learning_rates:
+
+        x = 0
+        x_values = []
+
+        for i in range(iterations):
+            x_values.append(x)
+
+            grad = gradient(x)
+            x = x - learning_rate * grad
+
+        plt.plot(
+            range(iterations),
+            x_values,
+            label="Learning Rate = " + str(learning_rate)
+        )
+
+    plt.xlabel("Iteration")
+    plt.ylabel("Value of x")
+    plt.title("Effect of Learning Rate on Gradient Descent")
+    plt.legend()
+    plt.grid(True)
+    plt.show()
+
+Explanation: A learning rate of 0.01 moves toward the minimum slowly. A
+learning rate of 0.1 converges faster. For this simple quadratic
+function, a learning rate of 0.5 reaches the minimum x = 3 in one update
+because the update exactly cancels the initial error.
+
+In general, very high learning rates can overshoot or cause unstable
+training, depending on the function.
+
+Task 5: Plotting a Function and Identifying Minima
+
+Function:
+
+f(x) = x⁴ - 3x³ + 2
+
+    import numpy as np
+    import matplotlib.pyplot as plt
+
+    def f(x):
+        return x ** 4 - 3 * x ** 3 + 2
+
+    x = np.linspace(-2, 4, 500)
+    y = f(x)
+
+    # Critical points come from:
+    # f'(x) = 4x^3 - 9x^2 = x^2(4x - 9)
+    # The local/global minimum occurs at x = 9/4 = 2.25.
+
+    minimum_x = 2.25
+    minimum_y = f(minimum_x)
+
+    plt.plot(x, y, label="f(x) = x^4 - 3x^3 + 2")
+
+    plt.scatter(
+        [minimum_x],
+        [minimum_y],
+        label="Local and Global Minimum"
+    )
+
+    plt.xlabel("x")
+    plt.ylabel("f(x)")
+    plt.title("Function with Minimum Point")
+    plt.legend()
+    plt.grid(True)
+    plt.show()
+
+    print("Minimum point:")
+    print("x =", minimum_x)
+    print("f(x) =", minimum_y)
+
+Explanation: The point near x = 2.25 is a local minimum. Since the x⁴
+term causes the function to approach positive infinity in both
+directions and this is the lowest turning point, it is also the global
+minimum.
+
+The point x = 0 is a stationary point, but it is not a local minimum.
+
+Conclusion
+
+This assignment demonstrates numerical differentiation, partial
+derivatives, gradient descent, the effect of learning rates, and the
+identification of minima. Gradients are essential in deep learning
+because they determine how model parameters should be updated to reduce
+the loss.

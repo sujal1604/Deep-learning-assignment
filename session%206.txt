@@ -1,0 +1,180 @@
+Session 6 - Deep Learning Assignment
+
+Task 1: Manual Forward Pass for a Single-Layer Neural Network
+
+    import numpy as np
+
+    def sigmoid(x):
+        return 1 / (1 + np.exp(-x))
+
+    # Input vector
+    X = np.array([1.0, 2.0, 3.0])
+
+    # Weight matrix
+    W = np.array([
+        [0.2, 0.4],
+        [0.5, 0.1],
+        [0.3, 0.7]
+    ])
+
+    # Calculate weighted sum
+    weighted_sum = np.dot(X, W)
+
+    # Apply sigmoid activation
+    output = sigmoid(weighted_sum)
+
+    print("Weighted Sum:", weighted_sum)
+    print("Network Output:", output)
+
+Explanation: The input vector is multiplied by the weight matrix using
+the NumPy dot product. The sigmoid activation function is then applied
+to produce the final output.
+
+Task 2: Forward Pass Through a Two-Layer Neural Network
+
+    import numpy as np
+
+    def relu(x):
+        return np.maximum(0, x)
+
+    def sigmoid(x):
+        return 1 / (1 + np.exp(-x))
+
+    # Input vector
+    X = np.array([1.0, 2.0, 3.0])
+
+    # Weights from input to hidden layer
+    W1 = np.array([
+        [0.2, -0.3, 0.5],
+        [0.4, 0.1, -0.2],
+        [-0.1, 0.6, 0.3]
+    ])
+
+    # Weights from hidden to output layer
+    W2 = np.array([
+        [0.4, -0.2],
+        [0.3, 0.5],
+        [-0.6, 0.7]
+    ])
+
+    # Hidden layer
+    hidden_input = np.dot(X, W1)
+    hidden_activation = relu(hidden_input)
+
+    # Output layer
+    output_input = np.dot(hidden_activation, W2)
+    output_activation = sigmoid(output_input)
+
+    print("Input:", X)
+    print("Hidden Activations:", hidden_activation)
+    print("Output Activations:", output_activation)
+
+Explanation: The first layer calculates a weighted sum and applies ReLU.
+The hidden activations are then passed to the output layer, where
+another weighted sum is calculated and sigmoid activation is applied.
+
+Task 3: Visualizing Layer Activations
+
+    import numpy as np
+    import matplotlib.pyplot as plt
+
+    def relu(x):
+        return np.maximum(0, x)
+
+    def sigmoid(x):
+        return 1 / (1 + np.exp(-x))
+
+    X = np.array([1.0, 2.0, 3.0])
+
+    W1 = np.array([
+        [0.2, -0.3, 0.5],
+        [0.4, 0.1, -0.2],
+        [-0.1, 0.6, 0.3]
+    ])
+
+    W2 = np.array([
+        [0.4, -0.2],
+        [0.3, 0.5],
+        [-0.6, 0.7]
+    ])
+
+    hidden_activation = relu(np.dot(X, W1))
+    output_activation = sigmoid(np.dot(hidden_activation, W2))
+
+    plt.figure(figsize=(12, 4))
+
+    plt.subplot(1, 3, 1)
+    plt.bar(range(len(X)), X)
+    plt.title("Input Activations")
+    plt.xlabel("Input Neuron")
+    plt.ylabel("Activation")
+
+    plt.subplot(1, 3, 2)
+    plt.bar(range(len(hidden_activation)), hidden_activation)
+    plt.title("Hidden Layer Activations")
+    plt.xlabel("Hidden Neuron")
+    plt.ylabel("Activation")
+
+    plt.subplot(1, 3, 3)
+    plt.bar(range(len(output_activation)), output_activation)
+    plt.title("Output Activations")
+    plt.xlabel("Output Neuron")
+    plt.ylabel("Activation")
+
+    plt.tight_layout()
+    plt.show()
+
+Explanation: The three bar charts show how the values change as
+information moves from the input layer through the hidden layer to the
+output layer.
+
+Task 4: Batch Forward Pass Through a Three-Layer Network
+
+The network contains an input layer, one hidden layer, and an output
+layer.
+
+    import numpy as np
+
+    def relu(x):
+        return np.maximum(0, x)
+
+    def sigmoid(x):
+        return 1 / (1 + np.exp(-x))
+
+    # Batch containing three input vectors
+    X = np.array([
+        [1.0, 2.0, 3.0],
+        [2.0, 1.0, 0.5],
+        [0.5, 1.5, 2.0]
+    ])
+
+    # Set seed for reproducible random weights
+    np.random.seed(42)
+
+    # Random weights
+    W1 = np.random.randn(3, 4)
+    W2 = np.random.randn(4, 2)
+
+    # Forward pass
+    hidden_input = np.dot(X, W1)
+    hidden_output = relu(hidden_input)
+
+    final_input = np.dot(hidden_output, W2)
+    final_output = sigmoid(final_input)
+
+    print("Output Activations:")
+
+    for i, output in enumerate(final_output):
+        print("Input", i + 1, ":", X[i])
+        print("Output:", output)
+
+Explanation: NumPy performs matrix multiplication for all three input
+samples at the same time. ReLU is used in the hidden layer, while
+sigmoid is used in the output layer.
+
+Conclusion
+
+This assignment demonstrates forward propagation through single-layer
+and multi-layer neural networks. It also shows how activations change
+between layers and how NumPy can efficiently process a batch of input
+samples.

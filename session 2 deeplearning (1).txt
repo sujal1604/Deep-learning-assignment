@@ -1,0 +1,343 @@
+Session 2 - Deep Learning Assignment
+
+Task 1: Perceptron for Flipkart Product Review Classification
+
+The following Python program uses NumPy to implement a perceptron that
+classifies a Flipkart product review as positive (1) or negative (0)
+using two features: 1. Review length 2. Number of exclamation marks
+
+    import numpy as np
+
+    # Dataset: [review_length, number_of_exclamation_marks]
+    X = np.array([
+        [20, 0],
+        [35, 1],
+        [50, 2],
+        [80, 4],
+        [100, 5],
+        [15, 0]
+    ], dtype=float)
+
+    # Labels: 0 = Negative, 1 = Positive
+    y = np.array([0, 0, 1, 1, 1, 0])
+
+    # Normalize features for easier training
+    X[:, 0] = X[:, 0] / 100
+    X[:, 1] = X[:, 1] / 5
+
+    # Initialize weights and bias
+    weights = np.zeros(2)
+    bias = 0.0
+    learning_rate = 0.1
+    epochs = 20
+
+    # Step activation function
+    def step_function(value):
+        return 1 if value >= 0 else 0
+
+    # Training the perceptron
+    for epoch in range(epochs):
+        for inputs, target in zip(X, y):
+            weighted_sum = np.dot(inputs, weights) + bias
+            prediction = step_function(weighted_sum)
+
+            error = target - prediction
+
+            weights += learning_rate * error * inputs
+            bias += learning_rate * error
+
+    print("Final weights:", weights)
+    print("Final bias:", bias)
+
+    # Test predictions
+    for inputs, target in zip(X, y):
+        prediction = step_function(np.dot(inputs, weights) + bias)
+        print("Input:", inputs,
+              "Actual:", target,
+              "Predicted:", prediction)
+
+Explanation: The perceptron calculates a weighted sum of the review
+length and number of exclamation marks. The step activation function
+converts the result into either 0 or 1. During training, the weights and
+bias are updated whenever the prediction is incorrect.
+
+Task 2: Weighted Sum and Step Activation Function
+
+    import numpy as np
+
+    def perceptron_output(inputs, weights, bias):
+        weighted_sum = np.dot(inputs, weights) + bias
+        output = 1 if weighted_sum >= 0 else 0
+        return output
+
+    # Test cases
+    test_cases = [
+        (np.array([1, 2]), np.array([0.5, 0.5]), -1),
+        (np.array([2, 1]), np.array([1.0, -0.5]), 0),
+        (np.array([0, 1]), np.array([0.7, 0.3]), -0.5)
+    ]
+
+    for inputs, weights, bias in test_cases:
+        result = perceptron_output(inputs, weights, bias)
+        print("Inputs:", inputs)
+        print("Weights:", weights)
+        print("Bias:", bias)
+        print("Output:", result)
+        print()
+
+Explanation: The function first calculates:
+
+Weighted Sum = (Input 1 × Weight 1) + (Input 2 × Weight 2) + Bias
+
+The step activation function then returns: - 1 if the weighted sum is
+greater than or equal to 0 - 0 if the weighted sum is less than 0
+
+Task 3: Limitation of a Single-Layer Perceptron Using XOR
+
+The XOR dataset is:
+
+[0, 0] → 0 [0, 1] → 1 [1, 0] → 1 [1, 1] → 0
+
+    import numpy as np
+
+    X = np.array([
+        [0, 0],
+        [0, 1],
+        [1, 0],
+        [1, 1]
+    ])
+
+    y = np.array([0, 1, 1, 0])
+
+    weights = np.zeros(2)
+    bias = 0.0
+    learning_rate = 0.1
+    epochs = 100
+
+    def step_function(value):
+        return 1 if value >= 0 else 0
+
+    for epoch in range(epochs):
+        for inputs, target in zip(X, y):
+            prediction = step_function(np.dot(inputs, weights) + bias)
+            error = target - prediction
+
+            weights += learning_rate * error * inputs
+            bias += learning_rate * error
+
+    print("Predictions after training:")
+
+    for inputs, target in zip(X, y):
+        prediction = step_function(np.dot(inputs, weights) + bias)
+        print(inputs, "Actual:", target, "Predicted:", prediction)
+
+Why does it fail?
+
+A single-layer perceptron can only create one linear decision boundary.
+The XOR problem is not linearly separable. There is no single straight
+line that can correctly separate the two classes.
+
+Therefore, even after many training epochs, a single-layer perceptron
+cannot learn the XOR pattern perfectly. A neural network with at least
+one hidden layer is required to solve XOR.
+
+Task 4: Multilayer Perceptron Using NumPy to Solve XOR
+
+The following MLP contains: - 2 input neurons - 1 hidden layer with 4
+neurons - 1 output neuron - Sigmoid activation function
+
+    import numpy as np
+
+    # XOR dataset
+    X = np.array([
+        [0, 0],
+        [0, 1],
+        [1, 0],
+        [1, 1]
+    ], dtype=float)
+
+    y = np.array([
+        [0],
+        [1],
+        [1],
+        [0]
+    ], dtype=float)
+
+    # Sigmoid activation
+    def sigmoid(x):
+        return 1 / (1 + np.exp(-x))
+
+    # Derivative of sigmoid
+    def sigmoid_derivative(x):
+        return x * (1 - x)
+
+    # Random initialization
+    np.random.seed(42)
+
+    input_neurons = 2
+    hidden_neurons = 4
+    output_neurons = 1
+
+    W1 = np.random.randn(input_neurons, hidden_neurons)
+    b1 = np.zeros((1, hidden_neurons))
+
+    W2 = np.random.randn(hidden_neurons, output_neurons)
+    b2 = np.zeros((1, output_neurons))
+
+    learning_rate = 0.5
+    epochs = 10000
+
+    # Training
+    for epoch in range(epochs):
+
+        # Forward propagation
+        hidden_input = np.dot(X, W1) + b1
+        hidden_output = sigmoid(hidden_input)
+
+        final_input = np.dot(hidden_output, W2) + b2
+        predicted_output = sigmoid(final_input)
+
+        # Calculate error
+        error = y - predicted_output
+
+        # Backpropagation
+        output_delta = error * sigmoid_derivative(predicted_output)
+
+        hidden_error = np.dot(output_delta, W2.T)
+        hidden_delta = hidden_error * sigmoid_derivative(hidden_output)
+
+        # Update weights and biases
+        W2 += learning_rate * np.dot(hidden_output.T, output_delta)
+        b2 += learning_rate * np.sum(output_delta, axis=0, keepdims=True)
+
+        W1 += learning_rate * np.dot(X.T, hidden_delta)
+        b1 += learning_rate * np.sum(hidden_delta, axis=0, keepdims=True)
+
+    # Final forward propagation
+    hidden_output = sigmoid(np.dot(X, W1) + b1)
+    predicted_output = sigmoid(np.dot(hidden_output, W2) + b2)
+
+    print("MLP outputs for XOR:")
+
+    for inputs, output in zip(X, predicted_output):
+        predicted_class = 1 if output[0] >= 0.5 else 0
+        print("Input:", inputs,
+              "Output:", round(output[0], 4),
+              "Predicted Class:", predicted_class)
+
+Explanation: The hidden layer allows the neural network to learn
+nonlinear decision boundaries. During training, forward propagation
+calculates predictions and backpropagation updates the weights and
+biases. After sufficient training, the MLP can correctly classify all
+four XOR inputs.
+
+Task 5: MLP for Zomato Restaurant Trending Classification
+
+The following example classifies a restaurant as: - Trending = 1 - Not
+Trending = 0
+
+The two input features are: 1. Average rating 2. Number of recent
+reviews
+
+    import numpy as np
+
+    # Dataset: [average_rating, recent_reviews]
+    X = np.array([
+        [4.8, 500],
+        [4.5, 350],
+        [3.0, 40],
+        [2.8, 20],
+        [4.2, 250],
+        [3.2, 60]
+    ], dtype=float)
+
+    # Actual labels
+    y = np.array([
+        [1],
+        [1],
+        [0],
+        [0],
+        [1],
+        [0]
+    ], dtype=float)
+
+    # Normalize input features
+    X[:, 0] = X[:, 0] / 5.0
+    X[:, 1] = X[:, 1] / 500.0
+
+    def sigmoid(x):
+        return 1 / (1 + np.exp(-x))
+
+    def sigmoid_derivative(x):
+        return x * (1 - x)
+
+    np.random.seed(10)
+
+    # Network structure
+    W1 = np.random.randn(2, 4)
+    b1 = np.zeros((1, 4))
+
+    W2 = np.random.randn(4, 1)
+    b2 = np.zeros((1, 1))
+
+    learning_rate = 0.5
+    epochs = 5000
+
+    # Train the MLP
+    for epoch in range(epochs):
+
+        # Forward propagation
+        hidden_input = np.dot(X, W1) + b1
+        hidden_output = sigmoid(hidden_input)
+
+        final_input = np.dot(hidden_output, W2) + b2
+        predicted_output = sigmoid(final_input)
+
+        # Error
+        error = y - predicted_output
+
+        # Backpropagation
+        output_delta = error * sigmoid_derivative(predicted_output)
+
+        hidden_error = np.dot(output_delta, W2.T)
+        hidden_delta = hidden_error * sigmoid_derivative(hidden_output)
+
+        # Update parameters
+        W2 += learning_rate * np.dot(hidden_output.T, output_delta)
+        b2 += learning_rate * np.sum(output_delta, axis=0, keepdims=True)
+
+        W1 += learning_rate * np.dot(X.T, hidden_delta)
+        b1 += learning_rate * np.sum(hidden_delta, axis=0, keepdims=True)
+
+    # Run final forward propagation
+    hidden_output = sigmoid(np.dot(X, W1) + b1)
+    final_output = sigmoid(np.dot(hidden_output, W2) + b2)
+
+    print("Zomato Restaurant Trending Predictions:")
+
+    for i in range(len(X)):
+        predicted_class = 1 if final_output[i][0] >= 0.5 else 0
+
+        print(
+            "Sample", i + 1,
+            "| Probability:", round(final_output[i][0], 4),
+            "| Actual:", int(y[i][0]),
+            "| Predicted:", predicted_class
+        )
+
+Explanation: The MLP uses the average restaurant rating and number of
+recent reviews as input features. The data is normalized before
+training. The hidden layer learns patterns between these features, and
+the output neuron produces a value between 0 and 1 using the sigmoid
+activation function.
+
+If the output is greater than or equal to 0.5, the restaurant is
+classified as trending. Otherwise, it is classified as not trending.
+
+Conclusion
+
+This assignment demonstrates the basic concepts of perceptrons and
+multilayer neural networks. A single-layer perceptron can solve linearly
+separable problems but cannot solve XOR. By adding a hidden layer and
+using nonlinear activation functions such as sigmoid, an MLP can learn
+nonlinear patterns and solve more complex classification problems.

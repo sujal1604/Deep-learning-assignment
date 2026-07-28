@@ -1,0 +1,270 @@
+Session 14 - Deep Learning Assignment
+
+Task 1: Movie Recommendation Network Using Keras Functional API
+
+This model takes two inputs: user age and favorite genre represented as
+an integer. The genre integer is converted into an embedding, combined
+with the normalized age input, and used to predict a movie rating. A
+sigmoid output is scaled to the range 1 to 5.
+
+    import tensorflow as tf
+    from tensorflow import keras
+    from tensorflow.keras import layers
+
+    # Input 1: User age
+    age_input = keras.Input(shape=(1,), name="user_age")
+
+    # Normalize age approximately to a smaller range
+    age_features = layers.Rescaling(1.0 / 100.0)(age_input)
+
+    # Input 2: Favorite genre as an integer
+    genre_input = keras.Input(
+        shape=(1,),
+        dtype="int32",
+        name="favorite_genre"
+    )
+
+    # Assume there are 10 possible genre IDs
+    genre_embedding = layers.Embedding(
+        input_dim=10,
+        output_dim=4
+    )(genre_input)
+
+    genre_features = layers.Flatten()(genre_embedding)
+
+    # Combine both inputs
+    combined = layers.Concatenate()([
+        age_features,
+        genre_features
+    ])
+
+    x = layers.Dense(16, activation="relu")(combined)
+    x = layers.Dense(8, activation="relu")(x)
+
+    # Sigmoid gives 0 to 1, then scale it to 1 to 5
+    rating_probability = layers.Dense(
+        1,
+        activation="sigmoid"
+    )(x)
+
+    rating_output = layers.Lambda(
+        lambda value: 1.0 + 4.0 * value,
+        name="predicted_rating"
+    )(rating_probability)
+
+    model = keras.Model(
+        inputs=[age_input, genre_input],
+        outputs=rating_output
+    )
+
+    model.compile(
+        optimizer="adam",
+        loss="mse",
+        metrics=["mae"]
+    )
+
+    model.summary()
+
+Explanation: The Functional API allows the two inputs to be processed
+separately before combining them. The final sigmoid value is transformed
+from the range 0-1 to 1-5, ensuring that the predicted rating remains
+within the required range.
+
+Task 2: Multi-Output Network for Food Delivery Predictions
+
+The model predicts: 1. Delivery time in minutes 2. Delivery rating from
+1 to 5 stars
+
+    import tensorflow as tf
+    from tensorflow import keras
+    from tensorflow.keras import layers
+
+    # Inputs
+    order_amount = keras.Input(
+        shape=(1,),
+        name="order_amount"
+    )
+
+    distance = keras.Input(
+        shape=(1,),
+        name="distance"
+    )
+
+    # Combine input features
+    combined = layers.Concatenate()([
+        order_amount,
+        distance
+    ])
+
+    # Shared hidden layers
+    x = layers.Dense(32, activation="relu")(combined)
+    x = layers.Dense(16, activation="relu")(x)
+
+    # Output 1: Delivery time
+    delivery_time = layers.Dense(
+        1,
+        activation="linear",
+        name="delivery_time"
+    )(x)
+
+    # Output 2: Rating between 1 and 5
+    rating_base = layers.Dense(
+        1,
+        activation="sigmoid"
+    )(x)
+
+    delivery_rating = layers.Lambda(
+        lambda value: 1.0 + 4.0 * value,
+        name="delivery_rating"
+    )(rating_base)
+
+    # Create model
+    model = keras.Model(
+        inputs=[order_amount, distance],
+        outputs=[delivery_time, delivery_rating]
+    )
+
+    model.compile(
+        optimizer="adam",
+        loss={
+            "delivery_time": "mse",
+            "delivery_rating": "mse"
+        },
+        metrics={
+            "delivery_time": ["mae"],
+            "delivery_rating": ["mae"]
+        }
+    )
+
+    model.summary()
+
+Explanation: The hidden layers learn shared information from the order
+amount and distance. Two separate output branches then make different
+predictions from the same learned features.
+
+Task 3: Convert a Sequential Music Recommendation Model to Functional
+API
+
+Suppose the original Sequential model is:
+
+    model = keras.Sequential([
+        layers.Input(shape=(10,)),
+        layers.Dense(32, activation="relu"),
+        layers.Dense(16, activation="relu"),
+        layers.Dense(1, activation="sigmoid")
+    ])
+
+The equivalent Functional API model is:
+
+    from tensorflow import keras
+    from tensorflow.keras import layers
+
+    # Playlist recommendation features
+    inputs = keras.Input(
+        shape=(10,),
+        name="playlist_features"
+    )
+
+    x = layers.Dense(
+        32,
+        activation="relu"
+    )(inputs)
+
+    x = layers.Dense(
+        16,
+        activation="relu"
+    )(x)
+
+    outputs = layers.Dense(
+        1,
+        activation="sigmoid",
+        name="recommendation_score"
+    )(x)
+
+    model = keras.Model(
+        inputs=inputs,
+        outputs=outputs
+    )
+
+    model.compile(
+        optimizer="adam",
+        loss="binary_crossentropy",
+        metrics=["accuracy"]
+    )
+
+    model.summary()
+
+Explanation: The Functional API version performs the same computation as
+the Sequential model. However, it is easier to extend later with
+additional inputs, outputs, branches, or skip connections.
+
+Task 4: Skip Connection for an IPL Cricket Score Predictor
+
+To use the Add layer, both branches being added must have the same
+shape. Therefore, the intermediate branch and direct input branch are
+projected to the same number of features before addition.
+
+    from tensorflow import keras
+    from tensorflow.keras import layers
+
+    # Example IPL input features:
+    # current score, wickets, overs, run rate, etc.
+    inputs = keras.Input(
+        shape=(6,),
+        name="ipl_match_features"
+    )
+
+    # Intermediate Dense branch
+    x = layers.Dense(
+        16,
+        activation="relu"
+    )(inputs)
+
+    x = layers.Dense(
+        8,
+        activation="relu"
+    )(x)
+
+    # Direct skip branch from input
+    skip = layers.Dense(
+        8,
+        activation="linear"
+    )(inputs)
+
+    # Combine intermediate and skip branches
+    combined = layers.Add()([
+        x,
+        skip
+    ])
+
+    # Final output
+    output = layers.Dense(
+        1,
+        activation="linear",
+        name="predicted_score"
+    )(combined)
+
+    model = keras.Model(
+        inputs=inputs,
+        outputs=output
+    )
+
+    model.compile(
+        optimizer="adam",
+        loss="mse",
+        metrics=["mae"]
+    )
+
+    model.summary()
+
+Explanation: The skip connection allows information from the original
+input to reach a later stage of the network directly. Such connections
+can improve information flow and make deeper neural networks easier to
+train.
+
+Conclusion
+
+This assignment demonstrates the flexibility of the Keras Functional
+API. Unlike a simple Sequential model, the Functional API supports
+multiple inputs, multiple outputs, branching architectures, embeddings,
+and skip connections.

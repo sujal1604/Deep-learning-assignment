@@ -1,0 +1,182 @@
+Session 3 - Deep Learning Assignment
+
+Task 1: Create a Simple neuron_output Function
+
+The following function takes three arguments: input_value, weight, and
+bias. It calculates the output using the formula:
+
+output = input_value * weight + bias
+
+    def neuron_output(input_value, weight, bias):
+        output = input_value * weight + bias
+        return output
+
+    # Example
+    result = neuron_output(10, 0.5, 2)
+    print("Neuron Output:", result)
+
+Output: Neuron Output: 7.0
+
+Task 2: Apply the Neuron Function to Instagram Post Likes
+
+In this example, an array contains the number of likes on 5 Instagram
+posts. A weight of 0.8 and a bias of 2 are applied to each input value
+using a for loop.
+
+    def neuron_output(input_value, weight, bias):
+        return input_value * weight + bias
+
+    # Number of likes on 5 Instagram posts
+    instagram_likes = [50, 100, 150, 200, 250]
+
+    weight = 0.8
+    bias = 2
+
+    print("Neuron outputs for Instagram likes:")
+
+    for likes in instagram_likes:
+        output = neuron_output(likes, weight, bias)
+        print("Likes:", likes, "Output:", output)
+
+Expected Output:
+
+Likes: 50 Output: 42.0 Likes: 100 Output: 82.0 Likes: 150 Output: 122.0
+Likes: 200 Output: 162.0 Likes: 250 Output: 202.0
+
+Explanation: Each input value is multiplied by the weight 0.8, and then
+the bias value 2 is added to calculate the final neuron output.
+
+Task 3: Different Weight Initialization Strategies
+
+The following code initializes 10 neuron weights using three different
+methods:
+
+1.  Zero initialization
+2.  Random initialization between -1 and 1
+3.  Xavier initialization
+
+    import numpy as np
+
+    n = 10
+
+    # 1. All-zero initialization
+    zero_weights = np.zeros(n)
+
+    # 2. Random values between -1 and 1
+    random_weights = np.random.uniform(-1, 1, n)
+
+    # 3. Xavier initialization
+    # Mean = 0
+    # Standard deviation = 1 / sqrt(n)
+    xavier_weights = np.random.normal(
+        loc=0,
+        scale=1 / np.sqrt(n),
+        size=n
+    )
+
+    print("Zero Weights:")
+    print(zero_weights.tolist())
+
+    print("\nRandom Weights:")
+    print(random_weights.tolist())
+
+    print("\nXavier Weights:")
+    print(xavier_weights.tolist())
+
+Explanation:
+
+Zero Initialization: All weights start at zero. This can cause problems
+in neural networks because neurons may learn the same features.
+
+Random Initialization: Weights are randomly selected between -1 and 1.
+This helps break symmetry between neurons.
+
+Xavier Initialization: Weights are selected from a normal distribution
+with a standard deviation based on the number of inputs. It helps keep
+signals at a reasonable scale as they pass through the neural network.
+
+Task 4: Demonstrating Why Bias Is Essential
+
+The following example compares two neurons with the same weight but
+different bias values.
+
+    def neuron_output(input_value, weight, bias):
+        return input_value * weight + bias
+
+    input_value = 0
+    weight = 0.5
+
+    # Neuron without bias
+    output_without_bias = neuron_output(input_value, weight, 0)
+
+    # Neuron with bias
+    output_with_bias = neuron_output(input_value, weight, 5)
+
+    print("Output without bias:", output_without_bias)
+    print("Output with bias:", output_with_bias)
+
+    # When input is 0 and bias is also 0, the output must be 0.
+    # When bias is 5, the neuron can produce an output of 5 even when the input is 0.
+    # Therefore, bias allows the neuron to shift its output independently of the input.
+
+Expected Output:
+
+Output without bias: 0.0 Output with bias: 5.0
+
+Explanation: Without a bias term, a neuron with an input of zero always
+produces zero before an activation function is applied. Adding bias
+allows the neuron to shift its output and gives the model more
+flexibility to learn patterns in data.
+
+Task 5: Neuron Function with Multiple Inputs and Weights
+
+Constraint: This solution uses only basic Python and does not use NumPy
+or any other external library.
+
+The function accepts: - A list of input values - A corresponding list of
+weights - A single bias value
+
+It calculates the weighted sum and adds the bias.
+
+    def neuron_output(input_values, weights, bias):
+        weighted_sum = 0
+
+        for i in range(len(input_values)):
+            weighted_sum += input_values[i] * weights[i]
+
+        output = weighted_sum + bias
+        return output
+
+
+    # Spotify playlist data
+    inputs = [2, 4, 1]
+    weights = [0.6, 0.3, 0.1]
+    bias = 1
+
+    result = neuron_output(inputs, weights, bias)
+
+    print("Spotify Playlist Neuron Output:", result)
+
+Calculation:
+
+(2 × 0.6) + (4 × 0.3) + (1 × 0.1) + 1
+
+= 1.2 + 1.2 + 0.1 + 1
+
+= 3.5
+
+Expected Output:
+
+Spotify Playlist Neuron Output: 3.5
+
+Explanation: The function multiplies each input by its corresponding
+weight and adds all the results together. Finally, the bias is added to
+calculate the neuron’s output.
+
+Conclusion
+
+In this assignment, we learned how a basic artificial neuron works using
+inputs, weights, and bias. We also explored different weight
+initialization strategies, including zero, random, and Xavier
+initialization. The examples demonstrate why bias is important and how a
+neuron can process multiple input values using a weighted sum.
