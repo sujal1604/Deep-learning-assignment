@@ -1,0 +1,207 @@
+ASSIGNMENT 20
+Deep Learning – Pooling Layers, Convolution and Feature Extraction
+
+Tasks Covered:
+1. Apply 2x2 max pooling with stride 2 to a random 6x6 grayscale image.
+2. Implement a 2x2 average pooling function.
+3. Compare max pooling and average pooling.
+4. Combine convolution followed by max pooling.
+5. Explain how pooling reduces computation and improves feature extraction.
+
+==================================================
+1. 6x6 IMAGE WITH 2x2 MAX POOLING
+==================================================
+
+import numpy as np
+
+# Create a 6x6 grayscale image
+np.random.seed(42)
+image = np.random.randint(0, 256, (6, 6))
+
+print("Original 6x6 Image:")
+print(image)
+
+# 2x2 max pooling with stride 2
+pooled = np.zeros((3, 3))
+
+for i in range(0, 6, 2):
+    for j in range(0, 6, 2):
+        region = image[i:i+2, j:j+2]
+        pooled[i//2, j//2] = np.max(region)
+
+print("\nMax Pooled 3x3 Image:")
+print(pooled)
+
+Explanation:
+Max pooling divides the image into 2x2 regions and keeps the largest value from each region.
+The 6x6 image is reduced to a 3x3 array.
+
+
+==================================================
+2. 2x2 AVERAGE POOLING FUNCTION
+==================================================
+
+import numpy as np
+
+def average_pooling_2x2(image):
+    height, width = image.shape
+
+    output_height = height // 2
+    output_width = width // 2
+
+    output = np.zeros((output_height, output_width))
+
+    for i in range(0, height, 2):
+        for j in range(0, width, 2):
+            region = image[i:i+2, j:j+2]
+
+            # Calculate average of the 2x2 region
+            output[i//2, j//2] = np.mean(region)
+
+    return output
+
+
+# Example
+image = np.array([
+    [1, 2, 3, 4],
+    [5, 6, 7, 8],
+    [9, 10, 11, 12],
+    [13, 14, 15, 16]
+])
+
+result = average_pooling_2x2(image)
+
+print("Original Image:")
+print(image)
+
+print("\nAverage Pooled Image:")
+print(result)
+
+Expected output:
+
+[[ 3.5  5.5]
+ [11.5 13.5]]
+
+
+==================================================
+3. MAX POOLING VS AVERAGE POOLING
+==================================================
+
+import numpy as np
+
+# Given 4x4 feature map
+feature_map = np.array([
+    [1, 2, 3, 4],
+    [5, 6, 7, 8],
+    [9, 10, 11, 12],
+    [13, 14, 15, 16]
+])
+
+max_pool = np.zeros((2, 2))
+avg_pool = np.zeros((2, 2))
+
+# 2x2 window with stride 2
+for i in range(0, 4, 2):
+    for j in range(0, 4, 2):
+
+        region = feature_map[i:i+2, j:j+2]
+
+        max_pool[i//2, j//2] = np.max(region)
+        avg_pool[i//2, j//2] = np.mean(region)
+
+print("Original Feature Map:")
+print(feature_map)
+
+print("\nMax Pooling:")
+print(max_pool)
+
+print("\nAverage Pooling:")
+print(avg_pool)
+
+print("\nSide-by-Side:")
+for max_row, avg_row in zip(max_pool, avg_pool):
+    print("Max:", max_row, "   Average:", avg_row)
+
+Comparison:
+Max pooling keeps the strongest/most important features, while average pooling keeps more overall
+information about the neighborhood but can smooth out strong features.
+
+
+==================================================
+4. CONVOLUTION FOLLOWED BY MAX POOLING
+==================================================
+
+import numpy as np
+
+# 5x5 input array
+input_array = np.array([
+    [1, 2, 3, 4, 5],
+    [6, 7, 8, 9, 10],
+    [11, 12, 13, 14, 15],
+    [16, 17, 18, 19, 20],
+    [21, 22, 23, 24, 25]
+])
+
+# Simple vertical edge detection filter
+kernel = np.array([
+    [-1, 0, 1],
+    [-1, 0, 1],
+    [-1, 0, 1]
+])
+
+# Step 1: 3x3 convolution, stride 1, no padding
+conv_output = np.zeros((3, 3))
+
+for i in range(3):
+    for j in range(3):
+        region = input_array[i:i+3, j:j+3]
+        conv_output[i, j] = np.sum(region * kernel)
+
+print("Input Array:")
+print(input_array)
+
+print("\nAfter 3x3 Convolution:")
+print(conv_output)
+
+# Step 2: 2x2 max pooling with stride 2
+# The 3x3 convolution output gives one complete 2x2 pooling window
+pool_output = np.zeros((1, 1))
+
+pool_output[0, 0] = np.max(conv_output[0:2, 0:2])
+
+print("\nAfter 2x2 Max Pooling:")
+print(pool_output)
+
+Explanation:
+The convolution layer detects features such as edges.
+The max pooling layer then keeps the strongest activation from a local region, reducing the feature map size.
+
+
+==================================================
+5. HOW POOLING HELPS INSTAGRAM OR ZOMATO
+==================================================
+
+Instagram Example:
+
+Suppose Instagram uses a deep learning model to recognize faces in photos.
+A pooling layer reduces the size of feature maps while keeping important features such as edges, eyes, and facial shapes.
+This reduces the number of calculations in later CNN layers, making the model faster and more efficient.
+
+Zomato Example:
+
+Zomato can use CNNs to recognize food items such as pizza, dosa, or biryani in restaurant images.
+Pooling reduces the image feature-map size while preserving strong food-related features, so the model can process images faster and focus on the most important patterns.
+
+In simple words:
+Pooling reduces computation by shrinking feature maps while retaining important features, which helps CNNs become faster and more efficient.
+
+
+==================================================
+SUMMARY
+==================================================
+
+1. Max pooling selects the maximum value from each local region.
+2. Average pooling calculates the average value of each local region.
+3. Pooling reduces the spatial size of feature maps.
+4. Convolution extracts features such as edges and shapes.
+5. Pooling after convolution helps reduce computation while preserving important features.

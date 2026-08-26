@@ -1,0 +1,288 @@
+ASSIGNMENT 19
+Deep Learning – Convolution, Stride, Padding and Image Filters
+
+Tasks Covered:
+1. Create a random 5x5 matrix and manually perform convolution.
+2. Implement convolution with a given stride.
+3. Add zero-padding and perform convolution.
+4. Compare edge detection and blur filters.
+5. Apply a custom filter to an Instagram image converted to grayscale.
+
+==================================================
+1. MANUAL CONVOLUTION ON A 5x5 MATRIX
+==================================================
+
+import numpy as np
+
+# Create a 5x5 matrix with random integers from 0 to 9
+np.random.seed(42)
+
+input_matrix = np.random.randint(0, 10, (5, 5))
+
+# Define a 3x3 kernel
+kernel = np.array([
+    [1, 0, -1],
+    [1, 0, -1],
+    [1, 0, -1]
+])
+
+print("Input Matrix:")
+print(input_matrix)
+
+print("\nKernel:")
+print(kernel)
+
+# Manual convolution with no padding and stride 1
+activation_map = np.zeros((3, 3))
+
+for i in range(3):
+    for j in range(3):
+        region = input_matrix[i:i+3, j:j+3]
+        activation_map[i, j] = np.sum(region * kernel)
+
+print("\nActivation Map:")
+print(activation_map)
+
+Explanation:
+The 3x3 kernel slides over the 5x5 input with stride 1.
+At every position, element-wise multiplication is performed and the values are added.
+The result is stored in the activation map.
+
+
+==================================================
+2. CONVOLUTION WITH A GIVEN STRIDE
+==================================================
+
+import numpy as np
+
+def apply_stride_convolution(input_matrix, kernel, stride):
+    input_height, input_width = input_matrix.shape
+    kernel_height, kernel_width = kernel.shape
+
+    # Calculate output dimensions
+    output_height = (input_height - kernel_height) // stride + 1
+    output_width = (input_width - kernel_width) // stride + 1
+
+    output = np.zeros((output_height, output_width))
+
+    for i in range(0, input_height - kernel_height + 1, stride):
+        for j in range(0, input_width - kernel_width + 1, stride):
+
+            region = input_matrix[
+                i:i+kernel_height,
+                j:j+kernel_width
+            ]
+
+            output[i // stride, j // stride] = np.sum(region * kernel)
+
+    return output
+
+
+# 6x6 input matrix
+input_matrix = np.array([
+    [1, 2, 3, 4, 5, 6],
+    [7, 8, 9, 10, 11, 12],
+    [13, 14, 15, 16, 17, 18],
+    [19, 20, 21, 22, 23, 24],
+    [25, 26, 27, 28, 29, 30],
+    [31, 32, 33, 34, 35, 36]
+])
+
+kernel = np.array([
+    [1, 0, -1],
+    [1, 0, -1],
+    [1, 0, -1]
+])
+
+stride = 2
+
+result = apply_stride_convolution(input_matrix, kernel, stride)
+
+print("6x6 Input Matrix:")
+print(input_matrix)
+
+print("\nActivation Map with Stride =", stride)
+print(result)
+
+Explanation:
+The stride tells the kernel how many pixels to move after each convolution.
+For stride 2, the kernel moves two positions at a time, producing a smaller activation map.
+
+
+==================================================
+3. ZERO-PADDING OF 1
+==================================================
+
+import numpy as np
+
+# Original 5x5 matrix
+input_matrix = np.array([
+    [1, 2, 3, 4, 5],
+    [6, 7, 8, 9, 0],
+    [1, 2, 3, 4, 5],
+    [6, 7, 8, 9, 0],
+    [1, 2, 3, 4, 5]
+])
+
+kernel = np.array([
+    [1, 0, -1],
+    [1, 0, -1],
+    [1, 0, -1]
+])
+
+# Add zero padding of 1
+padded_matrix = np.pad(
+    input_matrix,
+    pad_width=1,
+    mode="constant",
+    constant_values=0
+)
+
+print("Padded Matrix:")
+print(padded_matrix)
+
+# Apply convolution with stride 1
+output = np.zeros((5, 5))
+
+for i in range(5):
+    for j in range(5):
+        region = padded_matrix[i:i+3, j:j+3]
+        output[i, j] = np.sum(region * kernel)
+
+print("\nActivation Map after Zero Padding:")
+print(output)
+
+Explanation:
+Zero-padding adds a border of zeros around the input.
+With padding = 1 and a 3x3 kernel, the output keeps the same 5x5 spatial size when stride is 1.
+
+
+==================================================
+4. EDGE DETECTION AND BLUR FILTERS
+==================================================
+
+import numpy as np
+
+# Same 5x5 input matrix
+input_matrix = np.array([
+    [1, 2, 3, 4, 5],
+    [6, 7, 8, 9, 10],
+    [11, 12, 13, 14, 15],
+    [16, 17, 18, 19, 20],
+    [21, 22, 23, 24, 25]
+])
+
+# Laplacian edge detection kernel
+edge_kernel = np.array([
+    [0, 1, 0],
+    [1, -4, 1],
+    [0, 1, 0]
+])
+
+# 3x3 averaging blur kernel
+blur_kernel = np.ones((3, 3)) / 9
+
+
+def convolution(input_matrix, kernel):
+    h, w = input_matrix.shape
+    kh, kw = kernel.shape
+
+    output = np.zeros((h-kh+1, w-kw+1))
+
+    for i in range(h-kh+1):
+        for j in range(w-kw+1):
+            region = input_matrix[i:i+kh, j:j+kw]
+            output[i, j] = np.sum(region * kernel)
+
+    return output
+
+
+edge_output = convolution(input_matrix, edge_kernel)
+blur_output = convolution(input_matrix, blur_kernel)
+
+print("Edge Detection Activation Map:")
+print(edge_output)
+
+print("\nBlur Activation Map:")
+print(blur_output)
+
+print("\nSide-by-Side Comparison:")
+for edge_row, blur_row in zip(edge_output, blur_output):
+    print("Edge:", edge_row, "   Blur:", blur_row)
+
+Explanation:
+The edge detection kernel highlights changes in pixel intensity, such as edges.
+The blur kernel averages nearby pixels, making the image smoother and reducing small variations.
+
+
+==================================================
+5. APPLY A CUSTOM FILTER TO AN INSTAGRAM IMAGE
+==================================================
+
+# Install Pillow if needed:
+# pip install pillow
+
+from PIL import Image
+import numpy as np
+
+# Replace this with your Instagram image filename
+image = Image.open("instagram_photo.jpg")
+
+# Convert image to grayscale
+gray_image = image.convert("L")
+
+# Resize to 8x8
+gray_image = gray_image.resize((8, 8))
+
+# Convert to NumPy array
+image_array = np.array(gray_image, dtype=float)
+
+print("8x8 Grayscale Input Array:")
+print(image_array)
+
+# Custom horizontal edge detection filter
+custom_filter = np.array([
+    [-1, -1, -1],
+    [ 0,  0,  0],
+    [ 1,  1,  1]
+])
+
+
+def apply_custom_filter(input_matrix, kernel):
+    h, w = input_matrix.shape
+    kh, kw = kernel.shape
+
+    output = np.zeros((h-kh+1, w-kw+1))
+
+    for i in range(h-kh+1):
+        for j in range(w-kw+1):
+            region = input_matrix[i:i+kh, j:j+kw]
+            output[i, j] = np.sum(region * kernel)
+
+    return output
+
+
+output_array = apply_custom_filter(image_array, custom_filter)
+
+print("\nCustom Filter:")
+print(custom_filter)
+
+print("\nOutput Activation Array:")
+print(output_array)
+
+Explanation:
+The custom filter detects horizontal edges in the image.
+Large positive or negative values indicate strong changes in brightness from one horizontal region to another.
+The output activation array shows where these horizontal features are present.
+
+
+==================================================
+SUMMARY
+==================================================
+
+1. Convolution applies a small kernel over an image to extract features.
+2. Stride controls how far the kernel moves at each step.
+3. Zero-padding adds pixels around an image and can preserve its spatial size.
+4. Edge detection filters highlight important boundaries and shapes.
+5. Blur filters smooth an image by averaging nearby pixels.
+6. CNNs use convolution and similar operations to automatically learn useful image features.
